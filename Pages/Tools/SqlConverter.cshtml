@@ -1,0 +1,47 @@
+@page "/tools/sql-converter"
+@{
+    ViewData["Title"] = "SQL 驼峰转换器";
+}
+
+<section class="page-intro">
+    <p class="eyebrow">CODE UTILITY / SQL NAMING</p>
+    <h1>SQL 驼峰转换器</h1>
+    <p class="intro-copy">把字段、表名和 SQL 片段中的驼峰命名转换为大写下划线命名，转换逻辑由后端接口完成。</p>
+</section>
+
+<section class="panel converter-panel" aria-labelledby="sql-form-title">
+    <div class="panel-heading">
+        <div>
+            <p class="panel-kicker">TRANSFORM</p>
+            <h2 id="sql-form-title">输入与输出</h2>
+        </div>
+        <span class="panel-index">02</span>
+    </div>
+
+    <form id="sqlForm" class="converter-form">
+        <label class="field">
+            <span>输入 SQL / 命名片段</span>
+            <textarea id="inputSql" rows="9" spellcheck="false" placeholder="例如：select userId, userName from sysUser"></textarea>
+        </label>
+
+        <div class="form-actions converter-actions">
+            <button id="convertButton" class="button button-primary" type="submit">转换 SQL</button>
+            <button id="clearButton" class="button button-quiet" type="button">清空</button>
+            <output id="sqlStatus" class="status" role="status" aria-live="polite"></output>
+        </div>
+
+        <label class="field">
+            <span>输出结果 <small>大写下划线</small></span>
+            <textarea id="outputSql" rows="9" readonly spellcheck="false" placeholder="转换结果将显示在这里"></textarea>
+        </label>
+
+        <div class="output-footer">
+            <span>API · <code>POST /api/sql/convert</code></span>
+            <button id="copySqlButton" class="button button-secondary" type="button" disabled>复制结果</button>
+        </div>
+    </form>
+</section>
+
+@section Scripts {
+    <script src="~/js/sql-converter.js" asp-append-version="true"></script>
+}

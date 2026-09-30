@@ -1,0 +1,117 @@
+@page "/tools/identity-generator"
+@{
+    ViewData["Title"] = "身份信息生成器";
+}
+
+<section class="page-intro">
+    <p class="eyebrow">DATA UTILITY / TEST FIXTURES</p>
+    <h1>身份信息生成器</h1>
+    <p class="intro-copy">生成仅用于开发联调的虚构身份信息。数据由后端生成，身份证校验位符合 18 位号码规则。</p>
+</section>
+
+<div class="tool-grid identity-grid">
+    <section class="panel form-panel" aria-labelledby="identity-form-title">
+        <div class="panel-heading">
+            <div>
+                <p class="panel-kicker">CONFIGURE</p>
+                <h2 id="identity-form-title">生成参数</h2>
+            </div>
+            <span class="panel-index">01</span>
+        </div>
+
+        <form id="identityForm" class="tool-form">
+            <fieldset>
+                <legend>户籍地区</legend>
+                <div class="field-grid field-grid-3">
+                    <label class="field">
+                        <span>省 / 直辖市</span>
+                        <select id="provinceSelect" name="provinceCode">
+                            <option value="">随机省份</option>
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span>城市</span>
+                        <select id="citySelect" name="cityCode" disabled>
+                            <option value="">随机城市</option>
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span>区 / 县</span>
+                        <select id="countySelect" name="countyCode" disabled>
+                            <option value="">随机区县</option>
+                        </select>
+                    </label>
+                </div>
+            </fieldset>
+
+            <div class="field-grid field-grid-3">
+                <label class="field">
+                    <span>出生日期</span>
+                    <input id="birthDate" name="birthDate" type="date" />
+                    <small>留空则随机生成 1960–2005 年日期</small>
+                </label>
+                <label class="field">
+                    <span>性别</span>
+                    <select id="gender" name="gender">
+                        <option value="random">随机</option>
+                        <option value="male">男</option>
+                        <option value="female">女</option>
+                    </select>
+                </label>
+                <label class="field">
+                    <span>生成数量</span>
+                    <input id="count" name="count" type="number" value="5" min="1" max="100" inputmode="numeric" />
+                    <small>最多生成 100 条</small>
+                </label>
+            </div>
+
+            <div class="form-actions">
+                <button id="generateButton" class="button button-primary" type="submit">生成测试数据</button>
+                <output id="identityStatus" class="status" role="status" aria-live="polite"></output>
+            </div>
+        </form>
+    </section>
+
+    <aside class="panel note-panel" aria-labelledby="identity-note-title">
+        <p class="panel-kicker">GUARDRAILS</p>
+        <h2 id="identity-note-title">使用边界</h2>
+        <ul class="note-list">
+            <li>姓名、号码和地区均为随机组合，不对应真实个人。</li>
+            <li>数据只适合接口联调、表单校验和演示。</li>
+            <li>不要写入生产库、用于实名认证或任何真实业务。</li>
+        </ul>
+        <div class="note-rule"></div>
+        <p class="note-meta">API · <code>POST /api/identity/generate</code></p>
+    </aside>
+</div>
+
+<section class="panel results-panel" aria-labelledby="identity-results-title">
+    <div class="panel-heading results-heading">
+        <div>
+            <p class="panel-kicker">OUTPUT</p>
+            <h2 id="identity-results-title">生成结果 <span id="resultCount" class="count-badge">0</span></h2>
+        </div>
+        <button id="copyIdentityButton" class="button button-secondary" type="button" disabled>复制结果</button>
+    </div>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">姓名</th>
+                    <th scope="col">身份证号码</th>
+                    <th scope="col">性别</th>
+                    <th scope="col">出生日期</th>
+                    <th scope="col">区划代码</th>
+                </tr>
+            </thead>
+            <tbody id="identityResults">
+                <tr class="empty-row"><td colspan="5">正在准备生成器…</td></tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/js/identity-generator.js" asp-append-version="true"></script>
+}

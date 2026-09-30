@@ -5,6 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 // 注册 Razor Pages、API Controller 和应用层服务到依赖注入容器。
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
+builder.Services.AddSingleton<IdentityGeneratorService>();
+builder.Services.AddSingleton<SqlCaseConverterService>();
 builder.Services.AddSingleton<ToolCatalogService>();
 
 var app = builder.Build();
