@@ -1,0 +1,56 @@
+@page "/tools/expense-invoice"
+@{
+    ViewData["Title"] = "报销发票 PDF 合并";
+}
+
+<section class="page-intro">
+    <p class="eyebrow">PDF UTILITY / EXPENSE WORKFLOW</p>
+    <h1>报销发票 PDF 合并</h1>
+    <p class="intro-copy">选择本次需要处理的所有 PDF。系统会按文件选择顺序合并，并将第一页高度超过 600pt 的文件放到结果末尾。</p>
+</section>
+
+<section class="panel converter-panel pdf-panel" aria-labelledby="pdf-form-title">
+    <div class="panel-heading">
+        <div>
+            <p class="panel-kicker">SELECT FILES</p>
+            <h2 id="pdf-form-title">本次处理文件</h2>
+        </div>
+        <span class="panel-index">03</span>
+    </div>
+
+    <form id="pdfMergeForm" class="converter-form">
+        <label id="uploadZone" class="upload-zone" for="pdfFiles">
+            <span class="upload-mark" aria-hidden="true">PDF</span>
+            <span class="upload-title">选择多个 PDF 文件</span>
+            <span class="upload-hint">也可以直接把 PDF 拖到这里；文件只在本次请求中处理，不会扫描其他文件夹或长期保存</span>
+            <span class="button button-secondary upload-button">选择文件</span>
+            <input id="pdfFiles" name="files" type="file" accept="application/pdf,.pdf" multiple />
+        </label>
+
+        <div id="selectedFiles" class="selected-files" aria-live="polite">
+            <p class="file-empty">还没有选择文件</p>
+        </div>
+
+        <div class="form-actions converter-actions">
+            <button id="mergePdfButton" class="button button-primary" type="submit" disabled>合并并下载</button>
+            <button id="clearPdfButton" class="button button-quiet" type="button" disabled>清空选择</button>
+            <output id="pdfStatus" class="status" role="status" aria-live="polite"></output>
+        </div>
+    </form>
+</section>
+
+<section class="pdf-rules" aria-labelledby="pdf-rules-title">
+    <div>
+        <p class="panel-kicker">PROCESSING RULES</p>
+        <h2 id="pdf-rules-title">处理规则</h2>
+    </div>
+    <ol>
+        <li>只处理本次选择的 PDF 文件。</li>
+        <li>保持文件选择顺序，普通页面先合并。</li>
+        <li>第一页高度超过 600pt 的文件统一放到最后。</li>
+    </ol>
+</section>
+
+@section Scripts {
+    <script src="~/js/expense-invoice.js" asp-append-version="true"></script>
+}

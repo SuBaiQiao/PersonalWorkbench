@@ -8,6 +8,7 @@ builder.Services.AddControllers();
 builder.Services.AddSingleton<IdentityGeneratorService>();
 builder.Services.AddSingleton<SqlCaseConverterService>();
 builder.Services.AddSingleton<ToolCatalogService>();
+builder.Services.AddSingleton<PdfExpenseMergeService>();
 
 var app = builder.Build();
 
