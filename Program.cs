@@ -9,6 +9,7 @@ builder.Services.AddSingleton<IdentityGeneratorService>();
 builder.Services.AddSingleton<SqlCaseConverterService>();
 builder.Services.AddSingleton<ToolCatalogService>();
 builder.Services.AddSingleton<PdfExpenseMergeService>();
+builder.Services.AddSingleton<ImageBase64Service>();
 
 var app = builder.Build();
 

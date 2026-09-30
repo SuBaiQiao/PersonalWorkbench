@@ -7,6 +7,7 @@ PersonalWorkbench 是一个基于 ASP.NET Core 8 Razor Pages 的个人工具箱�
 - 身份信息生成器：生成仅供开发测试使用的虚构身份信息。
 - SQL 驼峰转换器：将 SQL 或命名片段中的驼峰命名转换为大写下划线命名。
 - 报销发票 PDF 合并：支持一次选择多个 PDF，也支持将 PDF 文件拖动到页面中，再通过接口合并并下载。
+- 图片与 Base64 转换器：支持图片转 Base64，以及 Base64 或 Data URL 转图片下载。
 
 ## 技术栈
 
@@ -154,6 +155,33 @@ Content-Type: multipart/form-data
 表单字段名为 `files`，可以重复传入多个 PDF 文件。接口返回 `application/pdf` 文件，默认文件名为 `合并后的PDF文件.pdf`。单次请求大小限制为 100 MB。
 
 合并顺序与 Python 脚本保持一致：第一页高度大于 600pt 的 PDF 会排在普通 PDF 之后，同一文件内部的页序保持不变。
+
+### Base64 转图片
+
+```http
+POST /api/image/base64-to-image
+Content-Type: application/json
+```
+
+请求示例：
+
+```json
+{
+  "base64": "data:image/png;base64,...",
+  "fileName": "converted.png"
+}
+```
+
+接口返回图片文件。支持纯 Base64 和 Base64 Data URL，文件名为可选字段；未提供文件名时会根据识别出的图片格式自动生成。单次请求最多处理 20 MB 的图片内容。
+
+### 图片转 Base64
+
+```http
+POST /api/image/image-to-base64
+Content-Type: multipart/form-data
+```
+
+表单字段名为 `file`。接口返回图片文件名、媒体类型、纯 Base64 和可直接用于浏览器预览的 `dataUrl`。支持 PNG、JPG、GIF、WEBP、BMP 和 SVG，单张图片不超过 20 MB。
 
 ## 依赖注入
 

@@ -35,6 +35,20 @@ public sealed class SqlConversionRequest
 
 public sealed record SqlConversionResponse(string OutputSql);
 
+public sealed class Base64ToImageRequest
+{
+    public string? Base64 { get; set; }
+
+    public string? FileName { get; set; }
+}
+
+public sealed record ImageBase64Response(
+    string FileName,
+    string ContentType,
+    long Size,
+    string Base64,
+    string DataUrl);
+
 public sealed record PdfMergeInput(string FileName, Stream Content);
 
 public sealed class ToolDefinition

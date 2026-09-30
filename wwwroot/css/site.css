@@ -690,6 +690,39 @@ td.mono {
     max-width: 900px;
 }
 
+.image-converter-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    max-width: 1180px;
+}
+
+.image-converter-panel {
+    max-width: none;
+}
+
+.image-preview {
+    display: block;
+    width: min(100%, 360px);
+    max-height: 260px;
+    margin-top: 18px;
+    object-fit: contain;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+}
+
+.image-converter-note {
+    max-width: 1180px;
+    padding: 25px 0 0;
+    color: var(--text-subtle);
+    font-size: 13px;
+}
+
+.image-converter-note p {
+    margin: 0;
+}
+
 .upload-zone {
     display: grid;
     min-height: 220px;
@@ -904,7 +937,8 @@ td.mono {
     }
 
     .identity-grid,
-    .field-grid-3 {
+    .field-grid-3,
+    .image-converter-grid {
         grid-template-columns: 1fr;
     }
 

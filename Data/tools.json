@@ -15,5 +15,11 @@
     "route": "/tools/expense-invoice",
     "order": 30,
     "icon": "PDF"
+  },
+  {
+    "name": "图片与 Base64 转换器",
+    "route": "/tools/image-base64",
+    "order": 40,
+    "icon": "IMG"
   }
 ]

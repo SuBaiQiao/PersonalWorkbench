@@ -1,0 +1,92 @@
+@page "/tools/image-base64"
+@{
+    ViewData["Title"] = "图片与 Base64 转换器";
+}
+
+<section class="page-intro" aria-labelledby="image-base64-title">
+    <p class="eyebrow">IMAGE UTILITY / BASE64</p>
+    <h1 id="image-base64-title">图片与 Base64 转换器</h1>
+    <p class="intro-copy">在图片文件和 Base64 文本之间互相转换，实际编码与解码由后端接口完成。</p>
+</section>
+
+<div class="image-converter-grid">
+    <section class="panel converter-panel image-converter-panel" aria-labelledby="base64-to-image-title">
+        <div class="panel-heading">
+            <div>
+                <p class="panel-kicker">BASE64 → IMAGE</p>
+                <h2 id="base64-to-image-title">Base64 转图片</h2>
+            </div>
+            <span class="panel-index">04A</span>
+        </div>
+
+        <form id="base64ToImageForm" class="converter-form">
+            <label class="field">
+                <span>Base64 内容或 Data URL</span>
+                <textarea id="base64Input" rows="12" spellcheck="false" placeholder="粘贴 data:image/png;base64,... 或纯 Base64 内容"></textarea>
+            </label>
+
+            <label class="field">
+                <span>下载文件名 <small>可选</small></span>
+                <input id="base64FileName" type="text" placeholder="converted-image.png" />
+            </label>
+
+            <div class="form-actions converter-actions">
+                <button id="base64ToImageButton" class="button button-primary" type="submit">转换并下载</button>
+                <button id="clearBase64Button" class="button button-quiet" type="button">清空</button>
+                <output id="base64ToImageStatus" class="status" role="status" aria-live="polite"></output>
+            </div>
+            <div class="output-footer">
+                <span>API · <code>POST /api/image/base64-to-image</code></span>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel converter-panel image-converter-panel" aria-labelledby="image-to-base64-title">
+        <div class="panel-heading">
+            <div>
+                <p class="panel-kicker">IMAGE → BASE64</p>
+                <h2 id="image-to-base64-title">图片转 Base64</h2>
+            </div>
+            <span class="panel-index">04B</span>
+        </div>
+
+        <form id="imageToBase64Form" class="converter-form">
+            <label id="imageUploadZone" class="upload-zone" for="imageFile">
+                <span class="upload-mark" aria-hidden="true">IMG</span>
+                <span class="upload-title">选择一张图片</span>
+                <span class="upload-hint">支持 PNG、JPG、GIF、WEBP、BMP 和 SVG，单张不超过 20 MB</span>
+                <span class="button button-secondary upload-button">选择文件</span>
+                <input id="imageFile" name="file" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/bmp,image/svg+xml,.png,.jpg,.jpeg,.gif,.webp,.bmp,.svg" />
+            </label>
+
+            <div id="imageFileSummary" class="selected-files" aria-live="polite">
+                <p class="file-empty">还没有选择图片</p>
+            </div>
+
+            <div class="form-actions converter-actions">
+                <button id="imageToBase64Button" class="button button-primary" type="submit" disabled>转换为 Base64</button>
+                <button id="clearImageButton" class="button button-quiet" type="button" disabled>清空选择</button>
+                <output id="imageToBase64Status" class="status" role="status" aria-live="polite"></output>
+            </div>
+
+            <label class="field">
+                <span>Base64 Data URL</span>
+                <textarea id="base64Output" rows="8" readonly spellcheck="false" placeholder="转换结果将显示在这里"></textarea>
+            </label>
+
+            <div class="output-footer">
+                <span>API · <code>POST /api/image/image-to-base64</code></span>
+                <button id="copyBase64Button" class="button button-secondary" type="button" disabled>复制结果</button>
+            </div>
+            <img id="imagePreview" class="image-preview" alt="转换后的图片预览" hidden />
+        </form>
+    </section>
+</div>
+
+<section class="image-converter-note" aria-label="格式说明">
+    <p><strong>提示：</strong>Base64 转图片支持纯 Base64 和以 <code>data:image/...</code> 开头的 Data URL。未提供文件名时，系统会根据图片格式生成下载文件名。</p>
+</section>
+
+@section Scripts {
+    <script src="~/js/image-base64.js" asp-append-version="true"></script>
+}
