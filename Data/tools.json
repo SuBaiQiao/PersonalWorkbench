@@ -1,0 +1,19 @@
+[
+  {
+    "name": "身份信息生成器",
+    "route": "/tools/identity-generator",
+    "order": 10
+  },
+  {
+    "name": "SQL 驼峰转换器",
+    "route": "/tools/sql-converter",
+    "order": 20,
+    "icon": "SQL"
+  },
+  {
+    "name": "报销发票 PDF 合并",
+    "route": "/tools/expense-invoice",
+    "order": 30,
+    "icon": "PDF"
+  }
+]

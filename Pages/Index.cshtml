@@ -1,0 +1,57 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "工具台";
+}
+
+<section class="home-hero" aria-labelledby="home-title">
+    <div class="home-hero-copy">
+        <p class="eyebrow">PERSONAL DEVELOPER WORKBENCH</p>
+        <h1 id="home-title">把常用的小工具，放在同一个工作台。</h1>
+        <p class="intro-copy">一个面向日常开发的轻量工具集合。需要什么，就从这里直接打开；工具目录由配置文件统一维护。</p>
+    </div>
+    <div class="home-signal" aria-label="工具台运行状态">
+        <span class="signal-dot" aria-hidden="true"></span>
+        <span>本地运行</span>
+        <span class="signal-divider" aria-hidden="true"></span>
+        <strong>@Model.Tools.Count.ToString("00")</strong>
+        <span>项工具</span>
+    </div>
+</section>
+
+<section class="home-tools" aria-labelledby="tools-title">
+    <div class="section-heading">
+        <div>
+            <p class="panel-kicker">QUICK ACCESS</p>
+            <h2 id="tools-title">快捷工具</h2>
+        </div>
+        <p class="section-meta"><code>Data/tools.json</code></p>
+    </div>
+
+    @if (Model.Tools.Count == 0)
+    {
+        <div class="home-empty" role="status">
+            <strong>暂时没有可用工具</strong>
+            <span>请检查 Data/tools.json 中的配置。</span>
+        </div>
+    }
+    else
+    {
+        <div class="tool-card-grid">
+            @foreach (var tool in Model.Tools)
+            {
+                <a class="tool-card" href="@tool.Route">
+                    <div class="tool-card-top">
+                        <span class="tool-icon" aria-hidden="true">@tool.DisplayIcon</span>
+                        <span class="tool-order">@tool.Order.ToString("00")</span>
+                    </div>
+                    <div class="tool-card-content">
+                        <h3>@tool.Name</h3>
+                        <p>打开工具</p>
+                    </div>
+                    <span class="tool-arrow" aria-hidden="true">→</span>
+                </a>
+            }
+        </div>
+    }
+</section>
