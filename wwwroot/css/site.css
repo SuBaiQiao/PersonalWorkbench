@@ -723,6 +723,60 @@ td.mono {
     margin: 0;
 }
 
+.cron-panel {
+    max-width: 900px;
+}
+
+.cron-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.cron-result {
+    display: grid;
+    gap: 14px;
+    padding: 20px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface-raised);
+}
+
+.cron-result-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.cron-expression {
+    display: block;
+    padding: 16px;
+    overflow-x: auto;
+    color: var(--orange-soft);
+    background: #171714;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 20px;
+    letter-spacing: .03em;
+}
+
+.cron-description {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.cron-note {
+    max-width: 900px;
+    padding: 25px 0 0;
+    color: var(--text-subtle);
+    font-size: 13px;
+}
+
+.cron-note p {
+    margin: 0;
+}
+
 .upload-zone {
     display: grid;
     min-height: 220px;
@@ -938,7 +992,8 @@ td.mono {
 
     .identity-grid,
     .field-grid-3,
-    .image-converter-grid {
+    .image-converter-grid,
+    .cron-form-grid {
         grid-template-columns: 1fr;
     }
 
@@ -978,6 +1033,11 @@ td.mono {
     }
 
     .section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .cron-result-heading {
         align-items: flex-start;
         flex-direction: column;
     }

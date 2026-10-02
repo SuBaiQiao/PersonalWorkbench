@@ -10,6 +10,7 @@ builder.Services.AddSingleton<SqlCaseConverterService>();
 builder.Services.AddSingleton<ToolCatalogService>();
 builder.Services.AddSingleton<PdfExpenseMergeService>();
 builder.Services.AddSingleton<ImageBase64Service>();
+builder.Services.AddSingleton<CronGeneratorService>();
 
 var app = builder.Build();
 

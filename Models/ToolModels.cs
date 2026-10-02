@@ -49,6 +49,23 @@ public sealed record ImageBase64Response(
     string Base64,
     string DataUrl);
 
+public sealed class CronGenerationRequest
+{
+    public string Frequency { get; set; } = "daily";
+
+    public int Interval { get; set; } = 1;
+
+    public int Minute { get; set; }
+
+    public int Hour { get; set; }
+
+    public int DayOfWeek { get; set; } = 1;
+
+    public int DayOfMonth { get; set; } = 1;
+}
+
+public sealed record CronGenerationResponse(string Expression, string Description);
+
 public sealed record PdfMergeInput(string FileName, Stream Content);
 
 public sealed class ToolDefinition

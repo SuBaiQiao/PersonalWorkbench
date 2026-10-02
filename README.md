@@ -8,6 +8,7 @@ PersonalWorkbench 是一个基于 ASP.NET Core 8 Razor Pages 的个人工具箱�
 - SQL 驼峰转换器：将 SQL 或命名片段中的驼峰命名转换为大写下划线命名。
 - 报销发票 PDF 合并：支持一次选择多个 PDF，也支持将 PDF 文件拖动到页面中，再通过接口合并并下载。
 - 图片与 Base64 转换器：支持图片转 Base64，以及 Base64 或 Data URL 转图片下载。
+- Cron 表达式生成器：根据常见执行频率和时间参数生成标准五字段 Cron 表达式。
 
 ## 技术栈
 
@@ -182,6 +183,28 @@ Content-Type: multipart/form-data
 ```
 
 表单字段名为 `file`。接口返回图片文件名、媒体类型、纯 Base64 和可直接用于浏览器预览的 `dataUrl`。支持 PNG、JPG、GIF、WEBP、BMP 和 SVG，单张图片不超过 20 MB。
+
+### 生成 Cron 表达式
+
+```http
+POST /api/cron/generate
+Content-Type: application/json
+```
+
+请求示例：
+
+```json
+{
+  "frequency": "weekly",
+  "interval": 1,
+  "hour": 9,
+  "minute": 30,
+  "dayOfWeek": 1,
+  "dayOfMonth": 1
+}
+```
+
+`frequency` 支持 `minutely`、`hourly`、`daily`、`weekly` 和 `monthly`。接口返回 Cron 表达式和中文规则说明。生成结果使用五字段格式：`分钟 小时 日期 月份 星期`，星期日使用 `0`。
 
 ## 依赖注入
 

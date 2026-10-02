@@ -21,5 +21,11 @@
     "route": "/tools/image-base64",
     "order": 40,
     "icon": "IMG"
+  },
+  {
+    "name": "Cron 表达式生成器",
+    "route": "/tools/cron-generator",
+    "order": 50,
+    "icon": "CRON"
   }
 ]
