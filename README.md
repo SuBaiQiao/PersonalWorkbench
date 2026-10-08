@@ -19,7 +19,10 @@ PersonalWorkbench 是一个基于 ASP.NET Core 8 Razor Pages 的个人工具箱�
 - ASP.NET Core Razor Pages
 - ASP.NET Core Web API Controller
 - `PdfSharpCore 1.3.67`
-- 前端使用 Razor、原生 JavaScript 和 CSS，没有额外的前端框架依赖
+- Vue 3.5.43
+- Ant Design Vue 4.2.6
+- axios 1.20.0
+- Razor 和原生 CSS
 
 ## 快速开始
 
@@ -62,7 +65,7 @@ PersonalWorkbench/
 ├── Services/                 # 业务逻辑服务
 ├── wwwroot/
 │   ├── css/                   # 全局样式
-│   └── js/                    # 各工具页面的前端脚本
+│   └── js/                    # 公共前端能力和各工具 Vue 应用
 ├── Program.cs                # 应用启动、依赖注入和路由配置
 ├── PersonalWorkbench.csproj  # 项目文件和 NuGet 依赖
 └── PersonalWorkbench.sln     # Visual Studio、Rider 解决方案文件
@@ -264,6 +267,22 @@ builder.Services.AddSingleton<PdfExpenseMergeService>();
 ```
 
 Controller 通过构造函数接收服务实例，业务逻辑放在 `Services` 目录中，避免 Controller 直接承担数据处理工作。
+
+## 前端公共能力
+
+公共布局 `_Layout.cshtml` 统一通过 CDN 引入 Vue、Ant Design Vue、Day.js、Ant Design Vue 所需的 Day.js 插件和 axios。每个工具页面是一个独立的 Vue 根应用，并共享 `wwwroot/js/app-common.js` 提供的能力：
+
+- 统一配置的 axios 请求实例
+- 后端错误信息解析，包括 Blob 下载接口的错误响应
+- 页面状态对象和 Ant Design 消息反馈
+- 剪贴板复制及复制结果反馈
+- 文件大小格式化
+- Blob 文件下载和响应文件名解析
+- multipart 文件表单构造、文件选择器打开和拖拽类型判断
+- Vue 应用挂载、Ant Design Vue 注册和暗色主题配置
+- Vue、Ant Design Vue 和 axios 依赖加载检查
+
+业务脚本只保留对应工具的状态和操作逻辑，所有 HTTP 请求均通过 axios 调用后端接口。
 
 ## 注意事项
 

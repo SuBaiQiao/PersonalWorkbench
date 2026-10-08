@@ -21,6 +21,10 @@
     box-sizing: border-box;
 }
 
+[v-cloak] {
+    display: none !important;
+}
+
 html {
     min-width: 320px;
     background: var(--bg);
@@ -37,9 +41,9 @@ body {
 }
 
 button,
-input,
+input:not(.ant-input):not(.ant-input-number-input),
 select,
-textarea {
+textarea:not(.ant-input) {
     font: inherit;
 }
 
@@ -439,6 +443,39 @@ legend {
     gap: 25px;
 }
 
+.panel .ant-form {
+    display: grid;
+    gap: 22px;
+}
+
+.panel .ant-form-item {
+    margin-bottom: 0;
+}
+
+.panel .ant-form-item-label > label,
+.panel .ant-form-item-extra {
+    color: var(--text-muted);
+}
+
+.panel .ant-form-item-extra {
+    padding-top: 5px;
+    font-size: 12px;
+}
+
+.panel .ant-btn {
+    min-height: 40px;
+    padding-inline: 16px;
+    font-weight: 650;
+}
+
+.panel .ant-alert {
+    border-color: var(--border-strong);
+}
+
+.panel .ant-empty-normal {
+    margin-block: 4px;
+}
+
 .field {
     display: grid;
     min-width: 0;
@@ -454,9 +491,9 @@ legend {
     font-weight: 400;
 }
 
-input,
+input:not(.ant-input):not(.ant-input-number-input),
 select,
-textarea {
+textarea:not(.ant-input) {
     width: 100%;
     border: 1px solid var(--border-strong);
     border-radius: 6px;
@@ -465,13 +502,13 @@ textarea {
     transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
-input,
+input:not(.ant-input):not(.ant-input-number-input),
 select {
     min-height: 46px;
     padding: 10px 12px;
 }
 
-textarea {
+textarea:not(.ant-input) {
     min-height: 180px;
     padding: 13px 14px;
     resize: vertical;
@@ -481,20 +518,20 @@ textarea {
     line-height: 1.65;
 }
 
-input::placeholder,
-textarea::placeholder {
+input:not(.ant-input):not(.ant-input-number-input)::placeholder,
+textarea:not(.ant-input)::placeholder {
     color: var(--text-subtle);
 }
 
-input:hover,
+input:not(.ant-input):not(.ant-input-number-input):hover,
 select:hover,
-textarea:hover {
+textarea:not(.ant-input):hover {
     border-color: #706b5f;
 }
 
-input:focus,
+input:not(.ant-input):not(.ant-input-number-input):focus,
 select:focus,
-textarea:focus {
+textarea:not(.ant-input):focus {
     border-color: var(--blue);
     box-shadow: 0 0 0 3px rgba(96, 165, 250, .12);
     outline: 0;
@@ -850,6 +887,21 @@ td.mono {
     border: 1px solid var(--border);
     border-radius: 6px;
     background: var(--surface-raised);
+}
+
+.selected-file {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    color: var(--text);
+    font-size: 13px;
+}
+
+.selected-file span {
+    flex: 0 0 auto;
+    color: var(--text-subtle);
+    font-family: Consolas, monospace;
 }
 
 .file-empty,
