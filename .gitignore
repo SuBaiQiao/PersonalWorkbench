@@ -480,3 +480,12 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+# Temporary output used by the local verification server
+.run-build/
+.verify-collab/
+
+# Runtime data created by the collaborative editor
+/Data/collaborative-editor/content.txt
+/Data/collaborative-editor/uploads/*
+!/Data/collaborative-editor/uploads/.gitkeep
+

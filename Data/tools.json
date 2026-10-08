@@ -27,5 +27,23 @@
     "route": "/tools/cron-generator",
     "order": 50,
     "icon": "CRON"
+  },
+  {
+    "name": "Android 集群设备监控",
+    "route": "/tools/android-monitor",
+    "order": 60,
+    "icon": "ADB"
+  },
+  {
+    "name": "端口占用检查",
+    "route": "/tools/port-checker",
+    "order": 70,
+    "icon": "PORT"
+  },
+  {
+    "name": "协同文本编辑器",
+    "route": "/tools/collaborative-editor",
+    "order": 80,
+    "icon": "SYNC"
   }
 ]
