@@ -9,6 +9,9 @@ PersonalWorkbench 是一个基于 ASP.NET Core 8 Razor Pages 的个人工具箱�
 - 报销发票 PDF 合并：支持一次选择多个 PDF，也支持将 PDF 文件拖动到页面中，再通过接口合并并下载。
 - 图片与 Base64 转换器：支持图片转 Base64，以及 Base64 或 Data URL 转图片下载。
 - Cron 表达式生成器：根据常见执行频率和时间参数生成标准五字段 Cron 表达式。
+- Android 集群设备监控：读取 `devices.txt`，通过 ADB 抓取设备屏幕并使用 WebSocket 实时推送到监控大屏。
+- 端口占用检查：检查本机 TCP/UDP 端口，并显示占用它的进程名称、PID 和监听状态。
+- 协同文本编辑器：通过 WebSocket 在多个浏览器之间同步文本，保留历史版本，并提供临时文件上传、下载、删除和粘贴图片上传。
 
 ## 技术栈
 
@@ -205,6 +208,49 @@ Content-Type: application/json
 ```
 
 `frequency` 支持 `minutely`、`hourly`、`daily`、`weekly` 和 `monthly`。接口返回 Cron 表达式和中文规则说明。生成结果使用五字段格式：`分钟 小时 日期 月份 星期`，星期日使用 `0`。
+
+### Android 集群设备监控
+
+打开 `/tools/android-monitor` 使用监控大屏。设备地址按一行一个写入项目根目录的 `devices.txt`，支持纯 IP（默认使用 ADB 的 5555 端口）或 `IP:端口`，例如 `192.168.1.20`、`192.168.1.20:5555`。运行环境需要安装并能从 PATH 找到 `adb`；如果同时安装 `ffmpeg`，服务会将画面缩放为 400 像素宽的 JPEG 后推送。页面会为每台设备建立 WebSocket，并持续显示 `adb exec-out screencap -p` 的最新画面。
+
+```http
+GET /api/android/devices
+POST /api/android/reconnect/{device}
+WebSocket /ws/android/{device}
+```
+
+### 端口占用检查
+
+打开 `/tools/port-checker` 输入端口号即可检查本机 TCP 和 UDP 占用情况。Windows 环境通过 `netstat -ano` 获取 PID，再读取对应进程名称；其他环境会退回 .NET 的监听端口枚举。
+
+```http
+POST /api/port/check
+POST /api/port/terminate
+Content-Type: application/json
+```
+
+请求示例：
+
+```json
+{
+  "port": 5190
+}
+```
+
+终止进程请求示例：
+
+```json
+{
+  "port": 5190,
+  "processId": 1234
+}
+```
+
+服务端会在终止前重新确认 PID 仍占用指定端口，确认成功后终止整个进程树；权限不足或进程已经退出时会返回错误信息。
+
+### 协同文本编辑器
+
+打开 `/tools/collaborative-editor` 后，多个浏览器访问同一地址即可共享文本。文本会保存到 `Data/collaborative-editor/content.txt`，上传文件保存在同目录的 `uploads` 下。页面通过原生 WebSocket `/ws/collaborative` 广播文本和文件列表变化，并支持查看历史版本、恢复、复制、下载、删除以及粘贴图片自动上传。
 
 ## 依赖注入
 

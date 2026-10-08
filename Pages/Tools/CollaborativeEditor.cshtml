@@ -1,0 +1,106 @@
+@page "/tools/collaborative-editor"
+@{
+    ViewData["Title"] = "协同文本编辑器";
+}
+
+<div id="collaborativeEditorApp" class="collaborative-editor-page" v-cloak>
+    <a-config-provider :theme="workbenchTheme">
+        <section class="page-intro collaborative-intro" aria-labelledby="collaborative-editor-title">
+            <div>
+                <p class="eyebrow">COLLABORATION UTILITY / REALTIME TEXT</p>
+                <h1 id="collaborative-editor-title">协同文本编辑器</h1>
+                <p class="intro-copy">在多个浏览器之间实时同步文本，并把文件作为临时中转内容共享给协作者。</p>
+            </div>
+            <div class="collaboration-connection" :class="connectionClass" role="status">
+                <span class="connection-dot" aria-hidden="true"></span>
+                <span>{{ connectionText }}</span>
+            </div>
+        </section>
+
+        <div class="collaborative-layout">
+            <section class="panel collaborative-editor-panel" aria-labelledby="editor-panel-title">
+                <div class="panel-heading collaborative-panel-heading">
+                    <div>
+                        <p class="panel-kicker">SHARED TEXT</p>
+                        <h2 id="editor-panel-title">实时文本</h2>
+                    </div>
+                    <span class="panel-index">08A</span>
+                </div>
+
+                <textarea v-model="text" class="collaborative-textarea" rows="18" placeholder="在这里输入文本，其他打开此页面的浏览器会即时看到变化。" v-on:input="handleTextInput" v-on:paste="handlePaste"></textarea>
+                <div class="collaborative-editor-footer">
+                    <span>{{ text.length }} 个字符 · 自动同步</span>
+                    <a-button size="small" v-on:click="copyText">复制全文</a-button>
+                </div>
+                <a-alert v-if="status.message" :message="status.message" :type="status.type" show-icon></a-alert>
+            </section>
+
+            <aside class="collaborative-sidebar">
+                <section class="panel collaborative-files-panel" aria-labelledby="files-panel-title">
+                    <div class="panel-heading collaborative-panel-heading">
+                        <div>
+                            <p class="panel-kicker">FILE RELAY</p>
+                            <h2 id="files-panel-title">共享文件 <span class="count-badge">{{ files.length }}</span></h2>
+                        </div>
+                        <span class="panel-index">08B</span>
+                    </div>
+
+                    <label class="collaborative-upload-zone" :class="{ 'is-uploading': isUploading }">
+                        <span class="upload-mark" aria-hidden="true">FILE</span>
+                        <span class="upload-title">选择文件上传</span>
+                        <span class="upload-hint">支持批量选择，单个文件不超过 100 MB</span>
+                        <span class="button button-secondary collaborative-upload-button">{{ isUploading ? `上传中 ${uploadProgress}%` : '选择文件' }}</span>
+                        <input ref="fileInput" type="file" multiple v-on:change="handleFileSelection">
+                    </label>
+
+                    <div v-if="files.length === 0" class="collaborative-file-empty">还没有共享文件</div>
+                    <ul v-else class="collaborative-file-list">
+                        <li v-for="file in files" :key="file">
+                            <span class="collaborative-file-name" :title="file">{{ file }}</span>
+                            <span class="collaborative-file-actions">
+                                <a-button type="link" size="small" v-on:click="downloadFile(file)">下载</a-button>
+                                <a-button type="link" danger size="small" v-on:click="deleteFile(file)">删除</a-button>
+                            </span>
+                        </li>
+                    </ul>
+                    <a-progress v-if="isUploading" :percent="uploadProgress" size="small" status="active"></a-progress>
+                </section>
+
+                <section class="panel collaborative-history-panel" aria-labelledby="history-panel-title">
+                    <div class="panel-heading collaborative-panel-heading">
+                        <div>
+                            <p class="panel-kicker">TEXT HISTORY</p>
+                            <h2 id="history-panel-title">历史版本 <span class="count-badge">{{ history.length }}</span></h2>
+                        </div>
+                        <span class="panel-index">08C</span>
+                    </div>
+                    <div v-if="history.length === 0" class="collaborative-file-empty">暂无历史版本</div>
+                    <ol v-else class="collaborative-history-list">
+                        <li v-for="(item, index) in reversedHistory" :key="item.index" v-on:click="showHistory(item.value)">
+                            <button type="button">
+                                <span class="history-version">版本 {{ history.length - index }}</span>
+                                <span>{{ historyPreview(item.value) }}</span>
+                            </button>
+                        </li>
+                    </ol>
+                </section>
+            </aside>
+        </div>
+
+        <div class="collaborative-note">
+            <strong>说明：</strong>文本和文件保存在当前服务实例中，适合局域网协作与临时中转。请勿上传敏感或生产数据。
+        </div>
+
+        <a-modal v-model:open="historyModalVisible" title="历史记录详情" :footer="null">
+            <pre class="history-modal-text">{{ selectedHistory }}</pre>
+            <div class="history-modal-actions">
+                <a-button type="primary" v-on:click="useHistory">使用此版本</a-button>
+                <a-button v-on:click="copyHistory">复制内容</a-button>
+            </div>
+        </a-modal>
+    </a-config-provider>
+</div>
+
+@section Scripts {
+    <script src="~/js/collaborative-editor.js" asp-append-version="true"></script>
+}
