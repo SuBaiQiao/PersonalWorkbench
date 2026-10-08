@@ -3,53 +3,74 @@
     ViewData["Title"] = "报销发票 PDF 合并";
 }
 
-<section class="page-intro">
-    <p class="eyebrow">PDF UTILITY / EXPENSE WORKFLOW</p>
-    <h1>报销发票 PDF 合并</h1>
-    <p class="intro-copy">选择本次需要处理的所有 PDF。系统会按文件选择顺序合并，并将第一页高度超过 600pt 的文件放到结果末尾。</p>
-</section>
+<div id="expenseInvoiceApp" v-cloak>
+    <a-config-provider :theme="workbenchTheme">
+        <section class="page-intro">
+            <p class="eyebrow">PDF UTILITY / EXPENSE WORKFLOW</p>
+            <h1>报销发票 PDF 合并</h1>
+            <p class="intro-copy">选择本次需要处理的所有 PDF。系统会按文件选择顺序合并，并将第一页高度超过 600pt 的文件放到结果末尾。</p>
+        </section>
 
-<section class="panel converter-panel pdf-panel" aria-labelledby="pdf-form-title">
-    <div class="panel-heading">
-        <div>
-            <p class="panel-kicker">SELECT FILES</p>
-            <h2 id="pdf-form-title">本次处理文件</h2>
-        </div>
-        <span class="panel-index">03</span>
-    </div>
+        <section class="panel converter-panel pdf-panel" aria-labelledby="pdf-form-title">
+            <div class="panel-heading">
+                <div>
+                    <p class="panel-kicker">SELECT FILES</p>
+                    <h2 id="pdf-form-title">本次处理文件</h2>
+                </div>
+                <span class="panel-index">03</span>
+            </div>
 
-    <form id="pdfMergeForm" class="converter-form">
-        <label id="uploadZone" class="upload-zone" for="pdfFiles">
-            <span class="upload-mark" aria-hidden="true">PDF</span>
-            <span class="upload-title">选择多个 PDF 文件</span>
-            <span class="upload-hint">也可以直接把 PDF 拖到这里；文件只在本次请求中处理，不会扫描其他文件夹或长期保存</span>
-            <span class="button button-secondary upload-button">选择文件</span>
-            <input id="pdfFiles" name="files" type="file" accept="application/pdf,.pdf" multiple />
-        </label>
+            <div class="converter-form">
+                <div class="upload-zone" :class="{ 'is-dragover': isDragging }"
+                     role="button" tabindex="0"
+                     v-on:click="openFileDialog"
+                     v-on:keydown.enter="openFileDialog"
+                     v-on:keydown.space.prevent="openFileDialog"
+                     v-on:dragover.prevent="handleDragOver"
+                     v-on:dragleave.prevent="isDragging = false"
+                     v-on:drop.prevent="handleDrop">
+                    <span class="upload-mark" aria-hidden="true">PDF</span>
+                    <span class="upload-title">选择多个 PDF 文件</span>
+                    <span class="upload-hint">也可以直接把 PDF 拖到这里；文件只在本次请求中处理，不会扫描其他文件夹或长期保存</span>
+                    <a-button v-on:click.stop="openFileDialog">选择文件</a-button>
+                    <input ref="fileInput" type="file" accept="application/pdf,.pdf" multiple hidden v-on:change="handleFileChange" />
+                </div>
 
-        <div id="selectedFiles" class="selected-files" aria-live="polite">
-            <p class="file-empty">还没有选择文件</p>
-        </div>
+                <div class="selected-files" aria-live="polite">
+                        <a-empty v-if="files.length === 0" description="还没有选择文件"></a-empty>
+                    <template v-else>
+                        <p class="file-summary">已选择 {{ files.length }} 个文件，合并顺序按选择顺序处理</p>
+                        <ol class="file-list">
+                            <li v-for="(file, index) in files" :key="`${file.name}-${file.size}-${index}`">
+                                <span>{{ file.name }}</span>
+                                <small>{{ formatFileSize(file.size) }}</small>
+                            </li>
+                        </ol>
+                    </template>
+                </div>
 
-        <div class="form-actions converter-actions">
-            <button id="mergePdfButton" class="button button-primary" type="submit" disabled>合并并下载</button>
-            <button id="clearPdfButton" class="button button-quiet" type="button" disabled>清空选择</button>
-            <output id="pdfStatus" class="status" role="status" aria-live="polite"></output>
-        </div>
-    </form>
-</section>
+                <div class="form-actions converter-actions">
+                    <a-button type="primary" :loading="loading" :disabled="files.length === 0" v-on:click="mergePdfs">合并并下载</a-button>
+                    <a-button :disabled="files.length === 0 || loading" v-on:click="clearSelection">清空选择</a-button>
+                </div>
 
-<section class="pdf-rules" aria-labelledby="pdf-rules-title">
-    <div>
-        <p class="panel-kicker">PROCESSING RULES</p>
-        <h2 id="pdf-rules-title">处理规则</h2>
-    </div>
-    <ol>
-        <li>只处理本次选择的 PDF 文件。</li>
-        <li>保持文件选择顺序，普通页面先合并。</li>
-        <li>第一页高度超过 600pt 的文件统一放到最后。</li>
-    </ol>
-</section>
+                <a-alert v-if="status.message" :message="status.message" :type="status.type" show-icon></a-alert>
+            </div>
+        </section>
+
+        <section class="pdf-rules" aria-labelledby="pdf-rules-title">
+            <div>
+                <p class="panel-kicker">PROCESSING RULES</p>
+                <h2 id="pdf-rules-title">处理规则</h2>
+            </div>
+            <ol>
+                <li>只处理本次选择的 PDF 文件。</li>
+                <li>保持文件选择顺序，普通页面先合并。</li>
+                <li>第一页高度超过 600pt 的文件统一放到最后。</li>
+            </ol>
+        </section>
+    </a-config-provider>
+</div>
 
 @section Scripts {
     <script src="~/js/expense-invoice.js" asp-append-version="true"></script>

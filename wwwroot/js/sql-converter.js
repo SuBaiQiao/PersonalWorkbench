@@ -1,77 +1,43 @@
-const sqlForm = document.querySelector('#sqlForm');
-const inputSql = document.querySelector('#inputSql');
-const outputSql = document.querySelector('#outputSql');
-const convertButton = document.querySelector('#convertButton');
-const clearButton = document.querySelector('#clearButton');
-const copySqlButton = document.querySelector('#copySqlButton');
-const sqlStatus = document.querySelector('#sqlStatus');
+(function initializeSqlConverter({ api, copyWithFeedback, createStatus, getErrorMessage, mountVueApp }) {
+    mountVueApp('#sqlConverterApp', {
+        data() {
+            return {
+                form: { inputSql: '' },
+                outputSql: '',
+                loading: false,
+                status: createStatus()
+            };
+        },
+        methods: {
+            /** 请求后端完成 SQL 命名转换。 */
+            async convertSql() {
+                this.loading = true;
+                this.status = createStatus('正在请求后端转换…');
 
-function setSqlStatus(message, tone = '') {
-    sqlStatus.textContent = message;
-    if (tone) {
-        sqlStatus.dataset.tone = tone;
-    } else {
-        delete sqlStatus.dataset.tone;
-    }
-}
+                try {
+                    const response = await api.post('/api/sql/convert', this.form);
+                    this.outputSql = response.data.outputSql;
+                    this.status = this.outputSql
+                        ? createStatus('转换完成。', 'success')
+                        : createStatus('输入为空，未生成结果。', 'warning');
+                } catch (error) {
+                    this.status = createStatus(await getErrorMessage(error), 'error');
+                } finally {
+                    this.loading = false;
+                }
+            },
 
-async function readSqlError(response) {
-    try {
-        const payload = await response.json();
-        return payload.message || '请求失败，请稍后重试。';
-    } catch {
-        return '请求失败，请稍后重试。';
-    }
-}
+            /** 清空输入、输出和状态信息。 */
+            clearSql() {
+                this.form.inputSql = '';
+                this.outputSql = '';
+                this.status = createStatus();
+            },
 
-async function convertSql(event) {
-    event.preventDefault();
-    convertButton.disabled = true;
-    setSqlStatus('正在请求后端转换…');
-
-    try {
-        const response = await fetch('/api/sql/convert', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ inputSql: inputSql.value })
-        });
-
-        if (!response.ok) {
-            throw new Error(await readSqlError(response));
+            /** 将转换结果复制到系统剪贴板。 */
+            async copySql() {
+                await copyWithFeedback(this.outputSql, '结果已复制到剪贴板。');
+            }
         }
-
-        const result = await response.json();
-        outputSql.value = result.outputSql;
-        copySqlButton.disabled = !result.outputSql;
-        setSqlStatus(result.outputSql ? '转换完成。' : '输入为空，未生成结果。', result.outputSql ? 'success' : '');
-    } catch (error) {
-        setSqlStatus(error.message || '请求失败，请稍后重试。', 'error');
-    } finally {
-        convertButton.disabled = false;
-    }
-}
-
-function clearSql() {
-    inputSql.value = '';
-    outputSql.value = '';
-    copySqlButton.disabled = true;
-    setSqlStatus('');
-    inputSql.focus();
-}
-
-async function copySql() {
-    if (!outputSql.value) {
-        return;
-    }
-
-    try {
-        await navigator.clipboard.writeText(outputSql.value);
-        setSqlStatus('结果已复制到剪贴板。', 'success');
-    } catch {
-        setSqlStatus('复制失败，请检查浏览器剪贴板权限。', 'error');
-    }
-}
-
-sqlForm.addEventListener('submit', convertSql);
-clearButton.addEventListener('click', clearSql);
-copySqlButton.addEventListener('click', copySql);
+    });
+}(window.Workbench));
