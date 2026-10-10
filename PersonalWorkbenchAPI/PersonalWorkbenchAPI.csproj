@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>PersonalWorkbench</RootNamespace>
+    <WebProjectDirectory>$(MSBuildProjectDirectory)/../PersonalWorkbenchWeb/</WebProjectDirectory>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PdfSharpCore" Version="1.3.67" />
+    <Content Update="Data\tools.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Always" />
+    <None Update="devices.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Always" />
+    <!-- Runtime collaboration data must not be included in deployment packages. -->
+    <Content Remove="Data/collaborative-editor/**" />
+    <None Remove="Data/collaborative-editor/**" />
+  </ItemGroup>
+
+  <!-- Build before collecting publish files so a clean checkout publishes the UI too. -->
+  <Target Name="BuildWebForPublish" BeforeTargets="ComputeFilesToPublish" Condition="'$(DesignTimeBuild)' != 'true'">
+    <Exec WorkingDirectory="$(WebProjectDirectory)" Command="npm ci --no-audit --no-fund" Condition="Exists('$(WebProjectDirectory)package-lock.json')" />
+    <Exec WorkingDirectory="$(WebProjectDirectory)" Command="npm install --no-audit --no-fund" Condition="!Exists('$(WebProjectDirectory)package-lock.json')" />
+    <Exec WorkingDirectory="$(WebProjectDirectory)" Command="npm run build" />
+    <ItemGroup>
+      <WebPublishFiles Include="$(WebProjectDirectory)dist/**/*" />
+      <ResolvedFileToPublish Include="@(WebPublishFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>wwwroot/%(WebPublishFiles.RecursiveDir)%(WebPublishFiles.Filename)%(WebPublishFiles.Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+
+</Project>

@@ -1,6 +1,6 @@
 # PersonalWorkbench
 
-PersonalWorkbench 是一个基于 ASP.NET Core 8 Razor Pages 的个人工具箱。项目采用“Razor Pages 页面 + API Controller + Service 业务服务”的结构，首页通过 JSON 配置展示可用工具。
+PersonalWorkbench 是一个个人工具箱，使用 Vue 3 + Vite 构建前端，ASP.NET Core 8 提供 API 和 WebSocket。前后端源码分别位于 `PersonalWorkbenchWeb` 和 `PersonalWorkbenchAPI`，同仓库管理，生产环境统一由 ASP.NET Core 托管。
 
 ## 功能
 
@@ -16,36 +16,54 @@ PersonalWorkbench 是一个基于 ASP.NET Core 8 Razor Pages 的个人工具箱�
 ## 技术栈
 
 - .NET 8
-- ASP.NET Core Razor Pages
 - ASP.NET Core Web API Controller
 - `PdfSharpCore 1.3.67`
 - Vue 3.5.43
 - Ant Design Vue 4.2.6
 - axios 1.20.0
-- Razor 和原生 CSS
+- Vue Router 4
+- Vite 7 + Vue 单文件组件 + 原生 CSS
 
 ## 快速开始
 
 ### 环境要求
 
 - .NET 8 SDK
+- Node.js 20.19+ 或 22.12+（建议使用当前 LTS 版本），以及 npm 或 pnpm 11
 
 ### 启动项目
 
-在项目根目录执行：
+在项目根目录的第一个终端启动 API：
 
 ```bash
-dotnet restore
-dotnet run --project PersonalWorkbench.csproj
+dotnet run --project PersonalWorkbenchAPI/PersonalWorkbenchAPI.csproj
 ```
 
-开发环境默认地址为：
+在第二个终端启动前端：
+
+```bash
+cd PersonalWorkbenchWeb
+npm install
+npm run dev
+```
+
+也可以使用 pnpm。`pnpm-workspace.yaml` 已允许 Vite 所需的 `esbuild` 和 `core-js` 安装脚本：
+
+```powershell
+cd PersonalWorkbenchWeb
+pnpm install
+pnpm run dev
+```
+
+浏览器访问 `http://localhost:5173`。Vite 将 `/api` 和 `/ws` 请求代理到后端，WebSocket 代理已启用，无需为普通开发额外配置 CORS。后端默认地址为：
 
 ```text
 http://localhost:5500
 ```
 
-应用默认监听 `0.0.0.0:5500`，端口可通过发布目录中的 `appsettings.json` 外置配置。修改 `Urls` 字段即可更换端口，例如 `http://0.0.0.0:5600`。也可以使用 `ASPNETCORE_URLS` 环境变量或 `--urls` 命令行参数覆盖该配置。
+后端默认监听 `0.0.0.0:5500`，端口可通过 `PersonalWorkbenchAPI/appsettings.json` 或发布目录中的 `appsettings.json` 配置。修改 `Urls` 字段即可更换端口，例如 `http://0.0.0.0:5600`。也可以使用 `ASPNETCORE_URLS` 环境变量或 `--urls` 命令行参数覆盖该配置。开发代理目标变更时，将 `PersonalWorkbenchWeb/.env.example` 复制为 `.env.local`，调整 `API_PROXY_TARGET` 并重启 Vite。
+
+Android 监控页默认使用当前浏览器地址，因此在开发环境也通过 Vite 代理连接。手动指定另一台服务时，该服务需要允许浏览器跨域 HTTP 请求；建议保持当前地址并调整开发代理目标。
 
 如需从同一局域网的其他设备访问，请使用本机局域网 IP。如果 Windows 防火墙拦截连接，请在管理员 PowerShell 中为实际端口添加仅允许本地子网访问的入站规则：
 
@@ -55,35 +73,81 @@ New-NetFirewallRule -DisplayName 'PersonalWorkbench TCP 5500 局域网访问' -D
 
 当前工具台包含可终止本机进程的接口。开放端口后，同一子网中的设备也能调用该接口，请仅在可信网络中使用。
 
-也可以使用以下命令验证项目：
+构建整个项目（PowerShell，在仓库根目录）：
 
 ```bash
-dotnet build PersonalWorkbench.csproj
+./build.ps1
 ```
+
+也可以分别执行 `npm run build`（前端目录）和 `dotnet build PersonalWorkbench.sln`（根目录）。先构建前端，再启动开发环境 API，可直接通过 `http://localhost:5500` 使用 `dist` 中的页面；修改前端源码后需要重新构建并重启 API。日常开发推荐使用 Vite 热更新。
+
+### 发布
+
+```powershell
+./build.ps1 -Mode Publish
+# 或在根目录执行：
+dotnet publish PersonalWorkbenchAPI/PersonalWorkbenchAPI.csproj -c Release -o artifacts/publish
+```
+
+API 的发布目标会安装前端依赖、执行 Vite 构建，并将 `PersonalWorkbenchWeb/dist` 放入发布包的 `wwwroot`。发布失败会中止，不会静默使用旧前端。生产运行环境需要 ASP.NET Core 8 Runtime，不需要 Node.js：
+
+```powershell
+cd artifacts/publish
+dotnet PersonalWorkbenchAPI.dll
+```
+
+生产环境访问 `http://localhost:5500`。页面、API 和 WebSocket 共用一个服务端口；刷新 `/tools/...` 会返回 SPA 入口，未知 `/api/...` 和 `/ws/...` 请求仍返回 404。
+
+首次 `npm install` 成功后会生成 `PersonalWorkbenchWeb/package-lock.json`，应将其提交到 Git。当前迁移尚未生成锁文件，依赖安装及完整构建验证由维护者执行。
+
+### 迁移后验证
+
+1. 执行 `./build.ps1`，确认前后端均构建成功。
+2. 启动 API 和 Vite，确认首页显示八个工具，已有功能可正常请求接口及下载文件。
+3. 同时打开两个协同编辑页面，确认文本同步；离开页面后不应继续创建连接。Android 实时画面需在安装 ADB 且设备可访问的环境验证。
+4. 执行 `./build.ps1 -Mode Publish` 并启动发布包，确认首页、静态资源和刷新 `/tools/sql-converter` 均正常。
+5. 请求未知 `/api/not-found`、`/ws/not-found`，确认返回 404，而不是页面 HTML。
 
 ## 目录结构
 
 ```text
 PersonalWorkbench/
-├── Controllers/              # API Controller，只负责 HTTP 请求和响应
-├── Data/
-│   └── tools.json             # 首页工具目录配置
-├── Models/                   # 请求、响应和领域模型
-├── Pages/                    # Razor Pages 页面
-│   ├── Index.cshtml           # 官网首页
-│   └── Tools/                 # 各个工具页面
-├── Services/                 # 业务逻辑服务
-├── wwwroot/
-│   ├── css/                   # 全局样式
-│   └── js/                    # 公共前端能力和各工具 Vue 应用
-├── Program.cs                # 应用启动、依赖注入和路由配置
-├── PersonalWorkbench.csproj  # 项目文件和 NuGet 依赖
-└── PersonalWorkbench.sln     # Visual Studio、Rider 解决方案文件
+├── PersonalWorkbench.sln             # .NET 解决方案入口
+├── build.ps1                         # 整体构建 / 发布入口
+├── README.md
+├── PersonalWorkbenchAPI/
+│   ├── PersonalWorkbenchAPI.csproj
+│   ├── Program.cs                    # API、WebSocket、静态文件和 SPA 路由
+│   ├── Controllers/
+│   ├── Services/
+│   ├── Models/
+│   ├── Data/
+│   │   ├── tools.json
+│   │   └── collaborative-editor/     # 运行数据，不随源码或发布包分发
+│   ├── Properties/
+│   ├── appsettings.json
+│   └── devices.txt
+└── PersonalWorkbenchWeb/
+    ├── package.json
+    ├── vite.config.js
+    ├── index.html
+    ├── .env.example
+    └── src/
+        ├── main.js                   # npm 依赖和 Vue 应用初始化
+        ├── App.vue
+        ├── router/                   # 保留原有 /tools/... 地址
+        ├── layouts/                  # 公共导航和页脚
+        ├── views/
+        │   ├── HomeView.vue
+        │   └── tools/                # 八个工具的模板与逻辑
+        ├── api/                      # axios 实例和错误解析
+        ├── utils/                    # 下载、文件、剪贴板、状态能力
+        └── styles/                   # 公共样式与 Ant Design 主题
 ```
 
 ## 首页工具配置
 
-首页工具由 `Data/tools.json` 配置，不需要修改首页 Razor 页面即可增加或调整工具：
+首页工具由 `PersonalWorkbenchAPI/Data/tools.json` 配置，前端通过 `GET /api/tools` 读取名称、排序、路由和图标。可以直接调整已有工具的展示；新增工具页面时，还需在 `PersonalWorkbenchWeb/src/router/index.js` 注册对应 Vue 组件：
 
 ```json
 [
@@ -101,7 +165,7 @@ PersonalWorkbench/
 | 字段 | 说明 |
 | --- | --- |
 | `name` | 首页显示的工具名称 |
-| `route` | 站内 Razor Page 路由 |
+| `route` | 站内 Vue Router 路由 |
 | `order` | 首页排序号，数值越小越靠前 |
 | `icon` | 可选图标文本；未配置时使用工具名称的第一个字符 |
 
@@ -224,7 +288,7 @@ Content-Type: application/json
 
 ### Android 集群设备监控
 
-打开 `/tools/android-monitor` 使用监控大屏。设备地址按一行一个写入项目根目录的 `devices.txt`，支持纯 IP（默认使用 ADB 的 5555 端口）或 `IP:端口`，例如 `192.168.1.20`、`192.168.1.20:5555`。运行环境需要安装并能从 PATH 找到 `adb`；如果同时安装 `ffmpeg`，服务会将画面缩放为 400 像素宽的 JPEG 后推送。页面会为每台设备建立 WebSocket，并持续显示 `adb exec-out screencap -p` 的最新画面。
+打开 `/tools/android-monitor` 使用监控大屏。设备地址按一行一个写入 `PersonalWorkbenchAPI/devices.txt`（发布后位于发布目录），支持纯 IP（默认使用 ADB 的 5555 端口）或 `IP:端口`，例如 `192.168.1.20`、`192.168.1.20:5555`。运行环境需要安装并能从 PATH 找到 `adb`；如果同时安装 `ffmpeg`，服务会将画面缩放为 400 像素宽的 JPEG 后推送。页面会为每台设备建立 WebSocket，并持续显示 `adb exec-out screencap -p` 的最新画面。
 
 ```http
 GET /api/android/devices
@@ -267,7 +331,7 @@ Content-Type: application/json
 
 ## 依赖注入
 
-服务在 `Program.cs` 中注册：
+服务在 `PersonalWorkbenchAPI/Program.cs` 中注册：
 
 ```csharp
 builder.Services.AddSingleton<IdentityGeneratorService>();
@@ -280,7 +344,9 @@ Controller 通过构造函数接收服务实例，业务逻辑放在 `Services` 
 
 ## 前端公共能力
 
-公共布局 `_Layout.cshtml` 统一通过 CDN 引入 Vue、Ant Design Vue、Day.js、Ant Design Vue 所需的 Day.js 插件和 axios。每个工具页面是一个独立的 Vue 根应用，并共享 `wwwroot/js/app-common.js` 提供的能力：
+前端使用一个 Vue 应用与 Vue Router，各工具通过懒加载进入对应单文件组件。模板和业务逻辑放在同一个 `.vue` 文件中。Vue、Ant Design Vue 和 axios 通过 npm 安装，由 Vite 打包，无需浏览器运行时访问 CDN。
+
+共享能力按职责拆分：
 
 - 统一配置的 axios 请求实例
 - 后端错误信息解析，包括 Blob 下载接口的错误响应
@@ -289,13 +355,18 @@ Controller 通过构造函数接收服务实例，业务逻辑放在 `Services` 
 - 文件大小格式化
 - Blob 文件下载和响应文件名解析
 - multipart 文件表单构造、文件选择器打开和拖拽类型判断
-- Vue 应用挂载、Ant Design Vue 注册和暗色主题配置
-- Vue、Ant Design Vue 和 axios 依赖加载检查
+- `src/main.js` 负责 Vue 应用挂载和 Ant Design Vue 注册
+- `src/styles/theme.js` 负责暗色主题配置，由根组件统一提供
+
+协同编辑和 Android 监控在离开页面时释放 WebSocket、重连计时器与图片对象 URL，支持 SPA 页面切换。
 
 业务脚本只保留对应工具的状态和操作逻辑，所有 HTTP 请求均通过 axios 调用后端接口。
 
 ## 注意事项
 
-- `Data/tools.json` 会复制到构建输出目录，修改配置后重新启动应用即可生效。
+- `PersonalWorkbenchAPI/Data/tools.json` 会复制到构建输出和发布目录。
+- Android 的 `devices.txt` 位于 `PersonalWorkbenchAPI`，发布时会一起复制。
+- 开发时的协同文本和上传文件已随目录整体迁移到 `PersonalWorkbenchAPI/Data/collaborative-editor`；发布时不会自动复制这些运行数据。部署迁移如需保留历史内容，应备份并单独迁移至新发布目录的 `Data/collaborative-editor`。
+- `PersonalWorkbenchWeb/dist`、`node_modules`、`artifacts` 均为生成目录，不提交 Git。
 - `bin/`、`obj/`、`.idea/` 等构建产物和 IDE 配置不应提交到 Git。
 - PDF 文件只在当前请求期间读取和处理，服务不会将上传文件持久化到磁盘。

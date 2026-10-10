@@ -485,7 +485,43 @@ FodyWeavers.xsd
 .verify-collab/
 
 # Runtime data created by the collaborative editor
-/Data/collaborative-editor/content.txt
-/Data/collaborative-editor/uploads/*
-!/Data/collaborative-editor/uploads/.gitkeep
+/PersonalWorkbenchAPI/Data/collaborative-editor/content.txt
+/PersonalWorkbenchAPI/Data/collaborative-editor/uploads/*
+!/PersonalWorkbenchAPI/Data/collaborative-editor/uploads/.gitkeep
+
+# Frontend build output and local configuration
+/PersonalWorkbenchWeb/dist/
+/PersonalWorkbenchWeb/.env.local
+/PersonalWorkbenchWeb/.env.*.local
+/PersonalWorkbenchAPI/wwwroot/
+
+# Node / pnpm local state
+**/node_modules/
+**/.pnpm-store/
+**/.npm/
+**/.yarn/
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vite and frontend test output
+/PersonalWorkbenchWeb/.vite/
+/PersonalWorkbenchWeb/coverage/
+/PersonalWorkbenchWeb/.env
+/PersonalWorkbenchWeb/.env.*
+!/PersonalWorkbenchWeb/.env.example
+*.tsbuildinfo
+
+# Local test and inspection output
+/artifacts/
+/TestResults/
+/task_plan.md
+/findings.md
+/progress.md
+
+# Operating system metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
 
