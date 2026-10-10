@@ -45,5 +45,11 @@
     "route": "/tools/collaborative-editor",
     "order": 80,
     "icon": "SYNC"
+  },
+  {
+    "name": "设备状态监控",
+    "route": "/tools/system-monitor",
+    "order": 90,
+    "icon": "SYS"
   }
 ]
