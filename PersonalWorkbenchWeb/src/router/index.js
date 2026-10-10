@@ -13,6 +13,7 @@ export const router = createRouter({
         { path: '/tools/android-monitor', component: () => import('../views/tools/AndroidMonitorView.vue'), meta: { title: 'Android 集群设备监控' } },
         { path: '/tools/port-checker', component: () => import('../views/tools/PortCheckerView.vue'), meta: { title: '端口占用检查' } },
         { path: '/tools/collaborative-editor', component: () => import('../views/tools/CollaborativeEditorView.vue'), meta: { title: '协同文本编辑器' } },
+        { path: '/tools/system-monitor', component: () => import('../views/tools/SystemMonitorView.vue'), meta: { title: '设备状态监控' } },
         { path: '/:pathMatch(.*)*', component: () => import('../views/NotFoundView.vue'), meta: { title: '页面不存在' } }
     ]
 });
