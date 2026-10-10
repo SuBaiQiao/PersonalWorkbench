@@ -5,6 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 // 注册 Razor Pages、API Controller 和应用层服务到依赖注入容器。
 builder.Services.AddRazorPages();
 builder.Services.AddControllers();
+builder.Services.AddProblemDetails();
 builder.Services.AddSingleton<IdentityGeneratorService>();
 builder.Services.AddSingleton<SqlCaseConverterService>();
 builder.Services.AddSingleton<ToolCatalogService>();
@@ -20,7 +21,7 @@ var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
-    // 生产环境只返回统一错误页，避免向客户端暴露异常细节。
+    // 生产环境返回标准 ProblemDetails 错误响应，避免向客户端暴露异常细节。
     app.UseExceptionHandler();
 }
 

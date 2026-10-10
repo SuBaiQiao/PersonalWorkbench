@@ -42,8 +42,18 @@ dotnet run --project PersonalWorkbench.csproj
 开发环境默认地址为：
 
 ```text
-http://localhost:5190
+http://localhost:5500
 ```
+
+应用默认监听 `0.0.0.0:5500`，端口可通过发布目录中的 `appsettings.json` 外置配置。修改 `Urls` 字段即可更换端口，例如 `http://0.0.0.0:5600`。也可以使用 `ASPNETCORE_URLS` 环境变量或 `--urls` 命令行参数覆盖该配置。
+
+如需从同一局域网的其他设备访问，请使用本机局域网 IP。如果 Windows 防火墙拦截连接，请在管理员 PowerShell 中为实际端口添加仅允许本地子网访问的入站规则：
+
+```powershell
+New-NetFirewallRule -DisplayName 'PersonalWorkbench TCP 5500 局域网访问' -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5500 -RemoteAddress LocalSubnet -Profile Private,Public
+```
+
+当前工具台包含可终止本机进程的接口。开放端口后，同一子网中的设备也能调用该接口，请仅在可信网络中使用。
 
 也可以使用以下命令验证项目：
 
