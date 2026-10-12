@@ -8,7 +8,7 @@ using PersonalWorkbench.Models;
 namespace PersonalWorkbench.Services;
 
 /// <summary>Reads the API host, with shared sampling and optional driver telemetry.</summary>
-public sealed partial class SystemStatusService(ILogger<SystemStatusService> logger)
+public sealed partial class SystemStatusService(ILogger<SystemStatusService> logger, ProcessNetworkMonitor networkMonitor)
 {
     private readonly SemaphoreSlim _samplingLock = new(1, 1);
     private SystemStatusResponse? _snapshot;

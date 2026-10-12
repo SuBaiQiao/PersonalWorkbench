@@ -13,6 +13,7 @@ builder.Services.AddSingleton<ImageBase64Service>();
 builder.Services.AddSingleton<CronGeneratorService>();
 builder.Services.AddSingleton<AndroidMonitorService>();
 builder.Services.AddSingleton<PortCheckService>();
+builder.Services.AddSingleton<ProcessNetworkMonitor>();
 builder.Services.AddSingleton<SystemStatusService>();
 builder.Services.AddSingleton<CollaborativeEditorService>();
 builder.Services.AddHostedService(serviceProvider => serviceProvider.GetRequiredService<AndroidMonitorService>());
