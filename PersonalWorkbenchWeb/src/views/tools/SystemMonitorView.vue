@@ -9,12 +9,25 @@ const cpuDetails = ref(null);
 const cpuDetailsOpen = ref(false);
 const cpuDetailsLoading = ref(false);
 const cpuDetailsError = ref('');
+const gpuDetails = ref(null);
+const gpuDetailsOpen = ref(false);
+const gpuDetailsLoading = ref(false);
+const gpuDetailsError = ref('');
+const processDetails = ref(null);
+const processDetailsOpen = ref(false);
+const processDetailsLoading = ref(false);
+const processDetailsError = ref('');
+const processSearch = ref('');
 const refreshInterval = ref(5);
 const intervals = [{ value: 0, label: '暂停刷新' }, { value: 5, label: '每 5 秒' }, { value: 10, label: '每 10 秒' }, { value: 30, label: '每 30 秒' }];
 let timer;
 let controller;
 let cpuTimer;
 let cpuController;
+let gpuTimer;
+let gpuController;
+let processTimer;
+let processController;
 let disposed = false;
 
 function formatBytes(bytes) {
@@ -27,6 +40,11 @@ function formatBytes(bytes) {
 }
 const formatPercent = value => Number.isFinite(value) ? `${value.toFixed(1)}%` : '不可用';
 const progressColor = value => value >= 90 ? 'var(--danger)' : 'var(--orange)';
+function formatRate(bytes) {
+    if (!Number.isFinite(bytes) || bytes < 0) return '不可用';
+    return `${formatBytes(bytes)}/s`;
+}
+function processTime(value) { return value ? new Date(value).toLocaleString() : '不可用'; }
 const updatedAt = computed(() => snapshot.value ? new Date(snapshot.value.collectedAt).toLocaleTimeString() : '尚未采样');
 const diskTotal = computed(() => {
     const disks = (snapshot.value?.disks || []).filter(disk => disk.isReady && disk.totalBytes > 0);
@@ -35,6 +53,43 @@ const diskTotal = computed(() => {
     const used = disks.reduce((sum, disk) => sum + disk.usedBytes, 0);
     return { total, used, percent: used / total * 100 };
 });
+const filteredProcesses = computed(() => {
+    const processes = processDetails.value?.processes || [];
+    const term = processSearch.value.trim().toLocaleLowerCase();
+    if (!term) return processes;
+    return processes.filter(process => `${process.name} ${process.processId} ${process.filePath || ''}`.toLocaleLowerCase().includes(term));
+});
+const processColumns = [
+    { title: 'PID', dataIndex: 'processId', key: 'pid', width: 76, sorter: (a, b) => a.processId - b.processId },
+    { title: '进程', dataIndex: 'name', key: 'name', width: 180, sorter: (a, b) => a.name.localeCompare(b.name) },
+    { title: 'CPU', dataIndex: 'cpuPercent', key: 'cpu', width: 90, sorter: (a, b) => (a.cpuPercent ?? -1) - (b.cpuPercent ?? -1) },
+    { title: '工作集', dataIndex: 'workingSetBytes', key: 'workingSet', width: 110, sorter: (a, b) => (a.workingSetBytes ?? -1) - (b.workingSetBytes ?? -1) },
+    { title: '专用内存', dataIndex: 'privateMemoryBytes', key: 'privateMemory', width: 110, sorter: (a, b) => (a.privateMemoryBytes ?? -1) - (b.privateMemoryBytes ?? -1) },
+    { title: '虚拟地址空间', dataIndex: 'virtualMemoryBytes', key: 'virtualMemory', width: 120 },
+    { title: '分页内存', dataIndex: 'pagedMemoryBytes', key: 'pagedMemory', width: 110 },
+    { title: 'GPU', dataIndex: 'gpuPercent', key: 'gpu', width: 84, sorter: (a, b) => (a.gpuPercent ?? -1) - (b.gpuPercent ?? -1) },
+    { title: 'GPU 显存', dataIndex: 'gpuMemoryBytes', key: 'gpuMemory', width: 110 },
+    { title: '网络接收', dataIndex: 'networkReceivedBytesPerSecond', key: 'networkReceived', width: 112 },
+    { title: '网络发送', dataIndex: 'networkSentBytesPerSecond', key: 'networkSent', width: 112 },
+    { title: 'TCP', dataIndex: 'tcpConnections', key: 'tcp', width: 64 },
+    { title: 'UDP', dataIndex: 'udpEndpoints', key: 'udp', width: 64 },
+    { title: '读速率', dataIndex: 'readBytesPerSecond', key: 'read', width: 110 },
+    { title: '写速率', dataIndex: 'writeBytesPerSecond', key: 'write', width: 110 },
+    { title: '线程', dataIndex: 'threadCount', key: 'threads', width: 76 },
+    { title: '句柄', dataIndex: 'handleCount', key: 'handles', width: 76 },
+    { title: '会话', dataIndex: 'sessionId', key: 'session', width: 76 },
+    { title: '父进程 PID', dataIndex: 'parentProcessId', key: 'parent', width: 100 },
+    { title: '优先级', dataIndex: 'basePriority', key: 'priority', width: 76 },
+    { title: '状态', dataIndex: 'status', key: 'status', width: 92 },
+    { title: '启动时间', dataIndex: 'startedAt', key: 'startedAt', width: 170 },
+    { title: '可执行文件', dataIndex: 'filePath', key: 'path', width: 320 },
+];
+const gpuEngineColumns = [
+    { title: 'GPU 实例', dataIndex: 'adapterInstance', key: 'adapter', width: 300 },
+    { title: 'PID', dataIndex: 'processId', key: 'pid', width: 90 },
+    { title: '引擎', dataIndex: 'engineType', key: 'engine', width: 150 },
+    { title: '使用率', dataIndex: 'usagePercent', key: 'usage', width: 100 },
+];
 function formatUptime(seconds) {
     const days = Math.floor(seconds / 86400);
     return `${days ? `${days} 天 ` : ''}${Math.floor(seconds % 86400 / 3600)} 小时 ${Math.floor(seconds % 3600 / 60)} 分钟`;
@@ -75,13 +130,61 @@ async function loadCpuDetails() {
         if (!disposed && !request.signal.aborted) cpuDetailsError.value = await getErrorMessage(error, 'CPU 详细信息读取失败。');
     } finally { cpuDetailsLoading.value = false; scheduleCpuRefresh(); }
 }
+function scheduleGpuRefresh() {
+    window.clearTimeout(gpuTimer);
+    if (!disposed && gpuDetailsOpen.value && !gpuDetailsLoading.value && refreshInterval.value > 0)
+        gpuTimer = window.setTimeout(loadGpuDetails, refreshInterval.value * 1000);
+}
+async function loadGpuDetails() {
+    if (disposed || !gpuDetailsOpen.value || gpuDetailsLoading.value) return;
+    window.clearTimeout(gpuTimer);
+    gpuDetailsLoading.value = true;
+    gpuController = new AbortController();
+    const request = gpuController;
+    try {
+        const response = await api.get('/api/system/gpu', { signal: request.signal, timeout: 30000 });
+        if (!disposed && !request.signal.aborted) { gpuDetails.value = response.data; gpuDetailsError.value = ''; }
+    } catch (error) {
+        if (!disposed && !request.signal.aborted) gpuDetailsError.value = await getErrorMessage(error, '显卡详细信息读取失败。');
+    } finally { gpuDetailsLoading.value = false; scheduleGpuRefresh(); }
+}
+function scheduleProcessRefresh() {
+    window.clearTimeout(processTimer);
+    if (!disposed && processDetailsOpen.value && !processDetailsLoading.value && refreshInterval.value > 0)
+        processTimer = window.setTimeout(loadProcessDetails, refreshInterval.value * 1000);
+}
+async function loadProcessDetails() {
+    if (disposed || !processDetailsOpen.value || processDetailsLoading.value) return;
+    window.clearTimeout(processTimer);
+    processDetailsLoading.value = true;
+    processController = new AbortController();
+    const request = processController;
+    try {
+        const response = await api.get('/api/system/processes', { signal: request.signal, timeout: 40000 });
+        if (!disposed && !request.signal.aborted) { processDetails.value = response.data; processDetailsError.value = ''; }
+    } catch (error) {
+        if (!disposed && !request.signal.aborted) processDetailsError.value = await getErrorMessage(error, '进程信息读取失败。');
+    } finally { processDetailsLoading.value = false; scheduleProcessRefresh(); }
+}
 watch(cpuDetailsOpen, open => {
     if (open) loadCpuDetails();
     else { window.clearTimeout(cpuTimer); cpuController?.abort(); }
 });
-watch(refreshInterval, scheduleCpuRefresh);
+watch(gpuDetailsOpen, open => {
+    if (open) loadGpuDetails();
+    else { window.clearTimeout(gpuTimer); gpuController?.abort(); }
+});
+watch(processDetailsOpen, open => {
+    if (open) loadProcessDetails();
+    else { window.clearTimeout(processTimer); processController?.abort(); }
+});
+watch(refreshInterval, () => { scheduleCpuRefresh(); scheduleGpuRefresh(); scheduleProcessRefresh(); });
 onMounted(loadStatus);
-onBeforeUnmount(() => { disposed = true; window.clearTimeout(timer); window.clearTimeout(cpuTimer); controller?.abort(); cpuController?.abort(); });
+onBeforeUnmount(() => {
+    disposed = true;
+    window.clearTimeout(timer); window.clearTimeout(cpuTimer); window.clearTimeout(gpuTimer); window.clearTimeout(processTimer);
+    controller?.abort(); cpuController?.abort(); gpuController?.abort(); processController?.abort();
+});
 </script>
 
 <template>
@@ -96,7 +199,8 @@ onBeforeUnmount(() => { disposed = true; window.clearTimeout(timer); window.clea
         <div class="monitor-actions">
             <label for="monitor-refresh">自动刷新</label>
             <a-select id="monitor-refresh" v-model:value="refreshInterval" :options="intervals" aria-label="自动刷新间隔" @change="scheduleRefresh" />
-            <a-button :loading="loading" @click="loadStatus">立即刷新</a-button>
+            <a-button @click="processDetailsOpen = true">查看全部进程</a-button>
+            <a-button @click="loadStatus">立即刷新</a-button>
         </div>
     </div>
     <a-alert v-if="errorMessage" class="monitor-alert" :message="errorMessage" type="error" show-icon role="alert" />
@@ -122,7 +226,7 @@ onBeforeUnmount(() => { disposed = true; window.clearTimeout(timer); window.clea
             </section>
 
             <section class="panel monitor-panel monitor-wide" aria-labelledby="gpu-status-title">
-                <div class="panel-heading"><div><p class="panel-kicker">GRAPHICS</p><h2 id="gpu-status-title">显卡</h2></div><span class="panel-index">03</span></div>
+                <div class="panel-heading"><div><p class="panel-kicker">GRAPHICS</p><h2 id="gpu-status-title">显卡</h2></div><div class="monitor-panel-actions"><span class="panel-index">03</span><a-button size="small" type="text" aria-label="查看显卡详情" @click="gpuDetailsOpen = true">查看详情 →</a-button></div></div>
                 <dl class="monitor-details monitor-gpu-summary">
                     <div><dt>整机最繁忙 GPU 引擎</dt><dd>{{ formatPercent(snapshot.gpu.usagePercent) }}</dd></div>
                     <div><dt>专用显存占用合计</dt><dd>{{ formatBytes(snapshot.gpu.dedicatedUsedBytes) }}</dd></div>
@@ -162,7 +266,7 @@ onBeforeUnmount(() => { disposed = true; window.clearTimeout(timer); window.clea
     </template>
 
     <a-modal v-model:open="cpuDetailsOpen" title="CPU 详细信息" width="780px" :footer="null" :style="{ top: '40px' }" :body-style="{ maxHeight: 'calc(100vh - 160px)', overflowY: 'auto' }" destroy-on-close>
-        <div class="cpu-detail-meta"><span>详情随页面刷新间隔更新</span><a-button size="small" :loading="cpuDetailsLoading" @click="loadCpuDetails">刷新 CPU 详情</a-button></div>
+        <div class="cpu-detail-meta"><span>详情随页面刷新间隔更新</span><a-button size="small" @click="loadCpuDetails">刷新 CPU 详情</a-button></div>
         <a-alert v-if="cpuDetailsError" class="monitor-alert" :message="cpuDetailsError + (cpuDetails ? '（显示上次采样数据）' : '')" type="error" show-icon />
         <div v-if="cpuDetailsLoading && !cpuDetails" class="monitor-empty" role="status">正在读取 CPU 详细信息…</div>
         <template v-if="cpuDetails">
@@ -183,6 +287,60 @@ onBeforeUnmount(() => { disposed = true; window.clearTimeout(timer); window.clea
             <p class="monitor-note">频率由系统报告，可能与瞬时睿频不同。每格代表一个逻辑处理器，使用率按约 0.5 秒的采样窗口计算。</p>
             <p v-if="!cpuDetails.packages.length" class="monitor-note">CPU 硬件详情不可用。</p>
             <div v-if="cpuDetails.logicalProcessors.length" class="cpu-logical-section"><h3>各逻辑处理器使用率</h3><div class="cpu-logical-grid"><div v-for="processor in cpuDetails.logicalProcessors" :key="processor.id" class="cpu-logical-item"><span>CPU {{ processor.id }}</span><strong>{{ formatPercent(processor.usagePercent) }}</strong><a-progress v-if="processor.usagePercent != null" :percent="processor.usagePercent" :show-info="false" :stroke-color="progressColor(processor.usagePercent)" :aria-label="`CPU ${processor.id} 使用率`" /></div></div></div>
+        </template>
+    </a-modal>
+
+    <a-modal v-model:open="gpuDetailsOpen" title="显卡详细信息" width="980px" :footer="null" :style="{ top: '40px' }" :body-style="{ maxHeight: 'calc(100vh - 160px)', overflowY: 'auto' }" destroy-on-close>
+        <div class="cpu-detail-meta"><span>{{ gpuDetails ? `采样时间 ${new Date(gpuDetails.collectedAt).toLocaleTimeString()}` : '读取显卡传感器与性能计数器' }}</span><a-button size="small" @click="loadGpuDetails">刷新显卡详情</a-button></div>
+        <a-alert v-if="gpuDetailsError" class="monitor-alert" :message="gpuDetailsError + (gpuDetails ? '（显示上次采样数据）' : '')" type="error" show-icon />
+        <div v-if="gpuDetailsLoading && !gpuDetails" class="monitor-empty" role="status">正在读取显卡详细信息…</div>
+        <template v-if="gpuDetails">
+            <a-alert v-for="warning in gpuDetails.warnings" :key="warning" class="monitor-alert" :message="warning" type="warning" show-icon />
+            <div v-if="gpuDetails.adapters.length" class="gpu-detail-grid">
+                <article v-for="adapter in gpuDetails.adapters" :key="adapter.id" class="gpu-detail-card">
+                    <h3>{{ adapter.name }}</h3>
+                    <p class="monitor-note">{{ adapter.pciBusId || adapter.id }} · 驱动 {{ adapter.driverVersion || '不可用' }}</p>
+                    <dl class="monitor-details gpu-metrics">
+                        <div><dt>GPU 使用率</dt><dd>{{ formatPercent(adapter.gpuUsagePercent) }}</dd></div><div><dt>显存控制器</dt><dd>{{ formatPercent(adapter.memoryUsagePercent) }}</dd></div>
+                        <div><dt>显存已用 / 总量</dt><dd>{{ formatBytes(adapter.usedMemoryBytes) }} / {{ formatBytes(adapter.totalMemoryBytes) }}</dd></div><div><dt>显存剩余</dt><dd>{{ formatBytes(adapter.freeMemoryBytes) }}</dd></div>
+                        <div><dt>GPU 温度</dt><dd>{{ adapter.temperatureCelsius == null ? '不可用' : `${adapter.temperatureCelsius.toFixed(0)} °C` }}</dd></div><div><dt>显存温度</dt><dd>{{ adapter.memoryTemperatureCelsius == null ? '不可用' : `${adapter.memoryTemperatureCelsius.toFixed(0)} °C` }}</dd></div>
+                        <div><dt>风扇转速</dt><dd>{{ formatPercent(adapter.fanPercent) }}</dd></div><div><dt>功耗 / 上限</dt><dd>{{ adapter.powerDrawWatts == null ? '不可用' : `${adapter.powerDrawWatts.toFixed(1)} W` }} / {{ adapter.powerLimitWatts == null ? '不可用' : `${adapter.powerLimitWatts.toFixed(1)} W` }}</dd></div>
+                        <div><dt>图形 / 显存时钟</dt><dd>{{ adapter.graphicsClockMhz == null ? '不可用' : `${adapter.graphicsClockMhz} MHz` }} / {{ adapter.memoryClockMhz == null ? '不可用' : `${adapter.memoryClockMhz} MHz` }}</dd></div><div><dt>最大图形 / 显存时钟</dt><dd>{{ adapter.maxGraphicsClockMhz == null ? '不可用' : `${adapter.maxGraphicsClockMhz} MHz` }} / {{ adapter.maxMemoryClockMhz == null ? '不可用' : `${adapter.maxMemoryClockMhz} MHz` }}</dd></div>
+                        <div><dt>编码 / 解码引擎</dt><dd>{{ formatPercent(adapter.encoderUsagePercent) }} / {{ formatPercent(adapter.decoderUsagePercent) }}</dd></div><div><dt>性能状态 / 计算模式</dt><dd>{{ adapter.performanceState || '不可用' }} / {{ adapter.computeMode || '不可用' }}</dd></div>
+                        <div><dt>VBIOS</dt><dd>{{ adapter.vbiosVersion || '不可用' }}</dd></div><div><dt>PCIe 当前链路</dt><dd>{{ adapter.pciLinkGeneration == null ? '不可用' : `Gen ${adapter.pciLinkGeneration}` }} / {{ adapter.pciLinkWidth == null ? '不可用' : `x${adapter.pciLinkWidth}` }}</dd></div>
+                        <div><dt>ECC</dt><dd>{{ adapter.eccMode || '不可用' }}</dd></div><div><dt>时钟限制</dt><dd>{{ adapter.clockThrottleReasons || '不可用' }}</dd></div>
+                    </dl>
+                    <div class="gpu-process-list"><h4>该显卡上的进程</h4><template v-if="adapter.processes.length"><div v-for="process in adapter.processes" :key="process.processId" class="gpu-process-row"><span>{{ process.name || '进程' }} (PID {{ process.processId }})</span><strong>{{ formatBytes(process.usedMemoryBytes) }}</strong></div></template><p v-else class="monitor-note">驱动未报告显卡进程。</p></div>
+                </article>
+            </div>
+            <p v-else class="monitor-note">未读取到显卡适配器。</p>
+            <section v-if="gpuDetails.memoryCounters.length" class="gpu-counter-section"><h3>Windows GPU 实例显存计数器</h3><a-table :data-source="gpuDetails.memoryCounters" :columns="[{ title: '适配器实例', dataIndex: 'adapterInstance', key: 'adapter' }, { title: '专用显存', dataIndex: 'dedicatedBytes', key: 'dedicated' }, { title: '共享显存', dataIndex: 'sharedBytes', key: 'shared' }]" :pagination="false" row-key="adapterInstance" size="small"><template #bodyCell="{ column, text }"><span v-if="column.key === 'dedicated' || column.key === 'shared'">{{ formatBytes(text) }}</span></template></a-table></section>
+            <section v-if="gpuDetails.processMemory.length" class="gpu-counter-section"><h3>各进程 GPU 显存计数器</h3><a-table :data-source="gpuDetails.processMemory" :columns="[{ title: 'PID', dataIndex: 'processId', key: 'pid' }, { title: '专用显存', dataIndex: 'dedicatedBytes', key: 'dedicated' }, { title: '共享显存', dataIndex: 'sharedBytes', key: 'shared' }]" :pagination="{ pageSize: 10 }" row-key="processId" size="small"><template #bodyCell="{ column, text }"><span v-if="column.key === 'dedicated' || column.key === 'shared'">{{ formatBytes(text) }}</span></template></a-table></section>
+            <section v-if="gpuDetails.engines.length" class="gpu-counter-section"><h3>GPU 引擎使用率</h3><a-table :data-source="gpuDetails.engines" :columns="gpuEngineColumns" :pagination="{ pageSize: 10 }" :scroll="{ x: 700 }" :row-key="record => `${record.adapterInstance}-${record.processId}-${record.engineType}`" size="small"><template #bodyCell="{ column, text }"><span v-if="column.key === 'pid'">{{ text ?? '系统' }}</span><span v-else-if="column.key === 'usage'">{{ formatPercent(text) }}</span></template></a-table></section>
+        </template>
+    </a-modal>
+
+    <a-modal v-model:open="processDetailsOpen" title="进程资源占用" width="1120px" :footer="null" :style="{ top: '32px' }" :body-style="{ maxHeight: 'calc(100vh - 140px)', overflowY: 'auto' }" destroy-on-close>
+        <div class="process-toolbar"><div><strong>{{ processDetails ? `${processDetails.processes.length} 个进程` : '读取进程列表' }}</strong><span v-if="processDetails">采样窗口 {{ (processDetails.sampleIntervalMilliseconds / 1000).toFixed(1) }} 秒 · {{ processDetails.processorCount }} 个逻辑处理器</span></div><div class="process-actions"><a-input v-model:value="processSearch" allow-clear placeholder="搜索进程名称、PID 或路径" aria-label="搜索进程" /><a-button @click="loadProcessDetails">刷新进程</a-button></div></div>
+        <a-alert v-if="processDetailsError" class="monitor-alert" :message="processDetailsError + (processDetails ? '（显示上次采样数据）' : '')" type="error" show-icon />
+        <div v-if="processDetailsLoading && !processDetails" class="monitor-empty" role="status">正在采样所有进程…</div>
+        <template v-if="processDetails">
+            <a-alert class="monitor-alert" :message="processDetails.networkNote" :type="processDetails.networkBandwidthAvailable ? 'info' : 'warning'" show-icon />
+            <p class="monitor-note">系统端点总数：TCP {{ processDetails.activeTcpConnections ?? '不可用' }} · UDP {{ processDetails.activeUdpEndpoints ?? '不可用' }}。读写速率为进程 I/O，可能包含设备 I/O；虚拟地址空间不是实际内存占用。CPU 使用率按整机逻辑处理器数量归一化。</p>
+            <a-alert v-for="warning in processDetails.warnings.filter(warning => warning !== processDetails.networkNote)" :key="warning" class="monitor-alert" :message="warning" type="warning" show-icon />
+            <a-table :columns="processColumns" :data-source="filteredProcesses" :pagination="{ pageSize: 25, showSizeChanger: true, pageSizeOptions: ['25', '50', '100'] }" :scroll="{ x: 2200 }" row-key="processId" size="small">
+                <template #bodyCell="{ column, record, text }">
+                    <span v-if="column.key === 'cpu' || column.key === 'gpu'">{{ formatPercent(text) }}</span>
+                    <span v-else-if="['workingSet', 'privateMemory', 'virtualMemory', 'pagedMemory', 'gpuMemory'].includes(column.key)">{{ formatBytes(text) }}</span>
+                    <span v-else-if="['networkReceived', 'networkSent', 'read', 'write'].includes(column.key)">{{ formatRate(text) }}</span>
+                    <span v-else-if="column.key === 'startedAt'">{{ processTime(text) }}</span>
+                    <span v-else-if="column.key === 'path'" class="process-path" :title="text || ''">{{ text || '不可用' }}</span>
+                    <span v-else-if="column.key === 'tcp' || column.key === 'udp'">{{ text ?? '不可用' }}</span>
+                    <span v-else-if="column.key === 'name'" :title="record.error || ''">{{ text }}</span>
+                    <span v-else-if="column.key === 'status'" :title="record.error || ''">{{ record.error || text }}</span>
+                </template>
+            </a-table>
+            <p v-if="!filteredProcesses.length" class="monitor-note">没有匹配的进程。</p>
         </template>
     </a-modal>
 </template>
@@ -230,10 +388,28 @@ onBeforeUnmount(() => { disposed = true; window.clearTimeout(timer); window.clea
 .cpu-logical-item span { color: var(--text-muted); font-size: 12px; }
 .cpu-logical-item strong { margin-top: 3px; font-family: Consolas, monospace; font-weight: 500; }
 .cpu-logical-item .ant-progress { margin-top: 4px; }
+.gpu-detail-grid { display: grid; gap: 16px; }
+.gpu-detail-card { min-width: 0; padding: 18px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-raised); }
+.gpu-detail-card h3, .gpu-counter-section h3 { margin: 0; font-size: 15px; overflow-wrap: anywhere; }
+.gpu-metrics { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.gpu-process-list, .gpu-counter-section { margin-top: 22px; }
+.gpu-process-list h4 { margin: 0 0 8px; font-size: 13px; }
+.gpu-process-row { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; border-top: 1px solid var(--border); overflow-wrap: anywhere; }
+.gpu-process-row strong { white-space: nowrap; font-family: Consolas, monospace; font-weight: 500; }
+.process-toolbar, .process-actions { display: flex; align-items: center; gap: 12px; }
+.process-toolbar { justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; }
+.process-toolbar > div:first-child { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.process-toolbar span { color: var(--text-muted); font-size: 12px; }
+.process-actions { flex-wrap: nowrap; }
+.process-actions .ant-input-affix-wrapper { width: 280px; }
+.process-path { display: block; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 780px) {
     .monitor-grid, .monitor-adapters, .monitor-disks, .monitor-gpu-summary { grid-template-columns: 1fr; }
     .monitor-panel { padding: 20px 18px; }
     .monitor-disk-details { gap: 8px; font-size: 13px; }
     .cpu-logical-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .gpu-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .process-actions { flex-wrap: wrap; width: 100%; }
+    .process-actions .ant-input-affix-wrapper { width: 100%; }
 }
 </style>
