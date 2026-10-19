@@ -247,7 +247,7 @@ Content-Type: application/json
 
 ```json
 {
-  "outputAmount": "壹仟贰佰叁拾肆元伍分陆角"
+  "outputAmount": "壹仟贰佰叁拾肆元伍角陆分"
 }
 ```
 
