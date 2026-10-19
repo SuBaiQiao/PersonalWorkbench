@@ -764,6 +764,44 @@ td.mono {
     max-width: 900px;
 }
 
+.amount-panel {
+    max-width: 900px;
+}
+
+.amount-result {
+    display: grid;
+    gap: 14px;
+    padding: 20px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface-raised);
+}
+
+.amount-result-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.amount-result-heading h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 620;
+}
+
+.amount-output {
+    min-height: 62px;
+    margin: 0;
+    padding: 16px;
+    overflow-wrap: anywhere;
+    color: var(--orange-soft);
+    background: #171714;
+    font-size: 24px;
+    font-weight: 650;
+    line-height: 1.55;
+}
+
 .cron-form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

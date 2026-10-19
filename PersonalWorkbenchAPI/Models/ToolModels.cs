@@ -35,6 +35,13 @@ public sealed class SqlConversionRequest
 
 public sealed record SqlConversionResponse(string OutputSql);
 
+public sealed class AmountConversionRequest
+{
+    public string? InputAmount { get; set; }
+}
+
+public sealed record AmountConversionResponse(string OutputAmount);
+
 public sealed class Base64ToImageRequest
 {
     public string? Base64 { get; set; }

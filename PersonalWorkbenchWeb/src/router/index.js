@@ -7,6 +7,7 @@ export const router = createRouter({
         { path: '/', component: () => import('../views/HomeView.vue'), meta: { title: '工具台' } },
         { path: '/tools/identity-generator', component: () => import('../views/tools/IdentityGeneratorView.vue'), meta: { title: '身份信息生成器' } },
         { path: '/tools/sql-converter', component: () => import('../views/tools/SqlConverterView.vue'), meta: { title: 'SQL 驼峰转换器' } },
+        { path: '/tools/amount-uppercase', component: () => import('../views/tools/AmountUppercaseView.vue'), meta: { title: '人民币大写转换器' } },
         { path: '/tools/expense-invoice', component: () => import('../views/tools/ExpenseInvoiceView.vue'), meta: { title: '报销发票 PDF 合并' } },
         { path: '/tools/image-base64', component: () => import('../views/tools/ImageBase64View.vue'), meta: { title: '图片与 Base64 转换器' } },
         { path: '/tools/cron-generator', component: () => import('../views/tools/CronGeneratorView.vue'), meta: { title: 'Cron 表达式生成器' } },

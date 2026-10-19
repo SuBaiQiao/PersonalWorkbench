@@ -13,13 +13,22 @@ try {
     } else {
         Push-Location PersonalWorkbenchWeb
         try {
-            if (Test-Path package-lock.json) {
+            if (Test-Path pnpm-lock.yaml) {
+                if (-not (Get-Command pnpm -ErrorAction SilentlyContinue)) {
+                    throw 'pnpm is required because the frontend is locked with pnpm-lock.yaml.'
+                }
+                & pnpm install --frozen-lockfile
+            } elseif (Test-Path package-lock.json) {
                 & npm ci --no-audit --no-fund
             } else {
                 & npm install --no-audit --no-fund
             }
             if ($LASTEXITCODE -ne 0) { throw 'Frontend dependency installation failed.' }
-            & npm run build
+            if (Test-Path pnpm-lock.yaml) {
+                & pnpm run build
+            } else {
+                & npm run build
+            }
             if ($LASTEXITCODE -ne 0) { throw 'Frontend build failed.' }
         } finally {
             Pop-Location

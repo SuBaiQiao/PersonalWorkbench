@@ -6,6 +6,7 @@ PersonalWorkbench 是一个个人工具箱，使用 Vue 3 + Vite 构建前端，
 
 - 身份信息生成器：生成仅供开发测试使用的虚构身份信息。
 - SQL 驼峰转换器：将 SQL 或命名片段中的驼峰命名转换为大写下划线命名。
+- 人民币大写转换器：将阿拉伯数字金额转换为人民币汉字大写，支持整数和两位以内小数。
 - 报销发票 PDF 合并：支持一次选择多个 PDF，也支持将 PDF 文件拖动到页面中，再通过接口合并并下载。
 - 图片与 Base64 转换器：支持图片转 Base64，以及 Base64 或 Data URL 转图片下载。
 - Cron 表达式生成器：根据常见执行频率和时间参数生成标准五字段 Cron 表达式。
@@ -30,7 +31,7 @@ PersonalWorkbench 是一个个人工具箱，使用 Vue 3 + Vite 构建前端，
 ### 环境要求
 
 - .NET 8 SDK
-- Node.js 20.19+ 或 22.12+（建议使用当前 LTS 版本），以及 npm 或 pnpm 11
+- Node.js 20.19+ 或 22.12+（建议使用当前 LTS 版本），以及 pnpm 11
 
 ### 启动项目
 
@@ -44,15 +45,15 @@ dotnet run --project PersonalWorkbenchAPI/PersonalWorkbenchAPI.csproj
 
 ```bash
 cd PersonalWorkbenchWeb
-npm install
-npm run dev
+pnpm install --frozen-lockfile
+pnpm run dev
 ```
 
-也可以使用 pnpm。`pnpm-workspace.yaml` 已允许 Vite 所需的 `esbuild` 和 `core-js` 安装脚本：
+`pnpm-workspace.yaml` 已允许 Vite 所需的 `esbuild` 和 `core-js` 安装脚本：
 
 ```powershell
 cd PersonalWorkbenchWeb
-pnpm install
+pnpm install --frozen-lockfile
 pnpm run dev
 ```
 
@@ -99,12 +100,12 @@ dotnet PersonalWorkbenchAPI.dll
 
 生产环境访问 `http://localhost:5500`。页面、API 和 WebSocket 共用一个服务端口；刷新 `/tools/...` 会返回 SPA 入口，未知 `/api/...` 和 `/ws/...` 请求仍返回 404。
 
-首次 `npm install` 成功后会生成 `PersonalWorkbenchWeb/package-lock.json`，应将其提交到 Git。当前迁移尚未生成锁文件，依赖安装及完整构建验证由维护者执行。
+前端依赖由 `PersonalWorkbenchWeb/pnpm-lock.yaml` 锁定，构建脚本会使用冻结安装验证锁文件未漂移。
 
 ### 迁移后验证
 
 1. 执行 `./build.ps1`，确认前后端均构建成功。
-2. 启动 API 和 Vite，确认首页显示九个工具，已有功能可正常请求接口及下载文件。
+2. 启动 API 和 Vite，确认首页显示十个工具，已有功能可正常请求接口及下载文件。
 3. 同时打开两个协同编辑页面，确认文本同步；离开页面后不应继续创建连接。Android 实时画面需在安装 ADB 且设备可访问的环境验证。
 4. 执行 `./build.ps1 -Mode Publish` 并启动发布包，确认首页、静态资源和刷新 `/tools/sql-converter` 均正常。
 5. 请求未知 `/api/not-found`、`/ws/not-found`，确认返回 404，而不是页面 HTML。
@@ -140,7 +141,7 @@ PersonalWorkbench/
         ├── layouts/                  # 公共导航和页脚
         ├── views/
         │   ├── HomeView.vue
-        │   └── tools/                # 九个工具的模板与逻辑
+        │   └── tools/                # 十个工具的模板与逻辑
         ├── api/                      # axios 实例和错误解析
         ├── utils/                    # 下载、文件、剪贴板、状态能力
         └── styles/                   # 公共样式与 Ant Design 主题
@@ -226,6 +227,31 @@ Content-Type: application/json
   "outputSql": "SELECT USER_NAME, CREATE_TIME FROM USER_INFO"
 }
 ```
+
+### 人民币大写转换
+
+```http
+POST /api/amount/convert
+Content-Type: application/json
+```
+
+请求示例：
+
+```json
+{
+  "inputAmount": "1234.56"
+}
+```
+
+响应示例：
+
+```json
+{
+  "outputAmount": "壹仟贰佰叁拾肆元伍分陆角"
+}
+```
+
+输入支持整数和最多两位小数，整数金额会以“整”结尾。
 
 ### 合并报销发票 PDF
 

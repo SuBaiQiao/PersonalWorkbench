@@ -11,6 +11,12 @@
     "icon": "SQL"
   },
   {
+    "name": "人民币大写转换器",
+    "route": "/tools/amount-uppercase",
+    "order": 25,
+    "icon": "￥"
+  },
+  {
     "name": "报销发票 PDF 合并",
     "route": "/tools/expense-invoice",
     "order": 30,

@@ -20,9 +20,11 @@
 
   <!-- Build before collecting publish files so a clean checkout publishes the UI too. -->
   <Target Name="BuildWebForPublish" BeforeTargets="ComputeFilesToPublish" Condition="'$(DesignTimeBuild)' != 'true'">
-    <Exec WorkingDirectory="$(WebProjectDirectory)" Command="npm ci --no-audit --no-fund" Condition="Exists('$(WebProjectDirectory)package-lock.json')" />
-    <Exec WorkingDirectory="$(WebProjectDirectory)" Command="npm install --no-audit --no-fund" Condition="!Exists('$(WebProjectDirectory)package-lock.json')" />
-    <Exec WorkingDirectory="$(WebProjectDirectory)" Command="npm run build" />
+    <Exec WorkingDirectory="$(WebProjectDirectory)" Command="pnpm install --frozen-lockfile" Condition="Exists('$(WebProjectDirectory)pnpm-lock.yaml')" />
+    <Exec WorkingDirectory="$(WebProjectDirectory)" Command="npm ci --no-audit --no-fund" Condition="!Exists('$(WebProjectDirectory)pnpm-lock.yaml') And Exists('$(WebProjectDirectory)package-lock.json')" />
+    <Exec WorkingDirectory="$(WebProjectDirectory)" Command="npm install --no-audit --no-fund" Condition="!Exists('$(WebProjectDirectory)pnpm-lock.yaml') And !Exists('$(WebProjectDirectory)package-lock.json')" />
+    <Exec WorkingDirectory="$(WebProjectDirectory)" Command="pnpm run build" Condition="Exists('$(WebProjectDirectory)pnpm-lock.yaml')" />
+    <Exec WorkingDirectory="$(WebProjectDirectory)" Command="npm run build" Condition="!Exists('$(WebProjectDirectory)pnpm-lock.yaml')" />
     <ItemGroup>
       <WebPublishFiles Include="$(WebProjectDirectory)dist/**/*" />
       <ResolvedFileToPublish Include="@(WebPublishFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
