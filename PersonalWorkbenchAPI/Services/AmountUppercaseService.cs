@@ -14,7 +14,7 @@ public sealed partial class AmountUppercaseService
     private static readonly string[] GroupUnits = ["", "万", "亿", "兆", "京", "垓", "秭", "穰", "沟", "涧", "正", "载"];
 
     /// <summary>
-    /// 将金额转换为人民币汉字大写。小数最多支持两位，按输入示例以“分、角”顺序输出。
+    /// 将金额转换为人民币汉字大写。小数最多支持两位，第一位为角、第二位为分。
     /// </summary>
     /// <param name="input">只包含数字、可选正负号和小数点的金额。</param>
     /// <returns>带“元”和“整”的人民币大写金额。</returns>
@@ -51,7 +51,6 @@ public sealed partial class AmountUppercaseService
         result.Append(ConvertInteger(significantInteger));
         result.Append('元');
 
-        // 保持需求示例的单位顺序：小数第一位为“分”，第二位为“角”。
         if (fraction == "00")
         {
             result.Append("整");
@@ -60,12 +59,12 @@ public sealed partial class AmountUppercaseService
         {
             if (fraction[0] != '0')
             {
-                result.Append(Numerals[fraction[0] - '0']).Append('分');
+                result.Append(Numerals[fraction[0] - '0']).Append('角');
             }
 
             if (fraction[1] != '0')
             {
-                result.Append(Numerals[fraction[1] - '0']).Append('角');
+                result.Append(Numerals[fraction[1] - '0']).Append('分');
             }
         }
 
