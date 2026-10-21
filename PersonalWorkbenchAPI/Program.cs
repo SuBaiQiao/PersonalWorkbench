@@ -17,6 +17,7 @@ builder.Services.AddSingleton<PortCheckService>();
 builder.Services.AddSingleton<ProcessNetworkMonitor>();
 builder.Services.AddSingleton<SystemStatusService>();
 builder.Services.AddSingleton<CollaborativeEditorService>();
+builder.Services.AddSingleton<CryptoService>();
 builder.Services.AddHostedService(serviceProvider => serviceProvider.GetRequiredService<AndroidMonitorService>());
 
 // 开发环境可直接托管 npm run build 的结果；发布包统一使用 wwwroot。

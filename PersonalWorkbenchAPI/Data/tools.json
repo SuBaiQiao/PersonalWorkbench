@@ -57,5 +57,17 @@
     "route": "/tools/system-monitor",
     "order": 90,
     "icon": "SYS"
+  },
+  {
+    "name": "加密工具箱",
+    "route": "/tools/crypto",
+    "order": 110,
+    "icon": "KEY"
+  },
+  {
+    "name": "二维码与条形码生成器",
+    "route": "/tools/code-generator",
+    "order": 120,
+    "icon": "QR"
   }
 ]
