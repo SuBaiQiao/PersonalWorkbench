@@ -39,7 +39,7 @@ function formatBytes(bytes) {
     return `${value.toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
 }
 const formatPercent = value => Number.isFinite(value) ? `${value.toFixed(1)}%` : '不可用';
-const progressColor = value => value >= 90 ? 'var(--danger)' : 'var(--orange)';
+const progressColor = value => value >= 90 ? 'var(--danger)' : 'var(--accent)';
 function formatRate(bytes) {
     if (!Number.isFinite(bytes) || bytes < 0) return '不可用';
     return `${formatBytes(bytes)}/s`;
@@ -373,7 +373,7 @@ onBeforeUnmount(() => {
 .monitor-note { margin: 10px 0 0; overflow-wrap: anywhere; }
 .monitor-disk-title { justify-content: space-between; align-items: flex-start; }
 .monitor-disk-title h3 span { color: var(--text-muted); font-weight: 400; }
-.monitor-disk-title strong { color: var(--orange-soft); font-family: Consolas, monospace; white-space: nowrap; }
+.monitor-disk-title strong { color: var(--accent-strong); font-family: Consolas, monospace; white-space: nowrap; }
 .monitor-disk-details { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .monitor-disks { margin-top: 20px; }
 .cpu-detail-meta { display: flex; gap: 20px; margin-bottom: 18px; color: var(--text-muted); font-size: 13px; flex-wrap: wrap; }

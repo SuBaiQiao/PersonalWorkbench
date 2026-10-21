@@ -1,7 +1,9 @@
 <script>
 import { markRaw } from 'vue';
+import WorkbenchIcon from '../../components/WorkbenchIcon.vue';
 
 export default {
+    components: { WorkbenchIcon },
     data() {
         return {
             serverHost: window.location.host,
@@ -139,7 +141,7 @@ export default {
 <div id="androidMonitorApp" class="android-monitor-page">
     <header class="android-monitor-header">
         <div class="android-brand">
-            <span class="android-brand-icon" aria-hidden="true">&#128241;</span>
+            <span class="android-brand-icon"><WorkbenchIcon name="phone" /></span>
             <h1>Android 多设备监控大屏</h1>
         </div>
         <div class="android-nav-actions">

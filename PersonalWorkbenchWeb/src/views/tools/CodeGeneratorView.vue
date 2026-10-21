@@ -209,5 +209,5 @@ function download() {
 .code-preview-info strong { color: var(--text); font-weight: 500; }
 .code-note { margin: 12px 0 0; color: var(--text-muted); font-size: 13px; }
 @media (max-width: 800px) { .code-grid { grid-template-columns: 1fr; gap: 16px; } }
-@media (max-width: 480px) { .code-panel { padding: 16px; } .code-options { grid-template-columns: 1fr; gap: 0; } }
+@media (max-width: 480px) { .code-panel { padding: 16px; } .code-options { grid-template-columns: 1fr; gap: 16px; } }
 </style>

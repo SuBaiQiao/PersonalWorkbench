@@ -199,23 +199,23 @@ onMounted(loadCards);
 </template>
 
 <style scoped>
-.delta-page { max-width: 1180px; margin: 0 auto; padding: 28px 0 64px; }
+.delta-page { max-width: 1180px; margin: 0 auto; padding: 0 0 32px; }
 .delta-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 28px; }
 .delta-header h1 { margin: 4px 0 8px; font-size: clamp(28px, 4vw, 44px); line-height: 1.1; }
 .delta-description { max-width: 620px; margin: 0; color: var(--text-secondary); }
 .delta-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
-.delta-summary > div { padding: 16px 18px; border: 1px solid var(--border); background: var(--surface-raised); }
+.delta-summary > div { padding: 22px; border: 1px solid var(--glass-border); border-radius: 22px; background: var(--surface); box-shadow: var(--shadow-glass); }
 .delta-summary span, .delta-summary small { display: block; color: var(--text-secondary); }
 .delta-summary strong { display: inline-block; margin: 8px 8px 0 0; font-size: 28px; color: var(--text-primary); }
 .delta-toolbar { display: grid; grid-template-columns: minmax(200px, 1.8fr) repeat(3, minmax(130px, 1fr)) auto; gap: 10px; margin-bottom: 24px; }
 .delta-state { padding: 56px 0; color: var(--text-secondary); text-align: center; }
 .delta-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-.delta-card { overflow: hidden; border: 1px solid var(--border); background: var(--surface-raised); transition: border-color .2s, transform .2s; }
+.delta-card { overflow: hidden; border: 1px solid var(--glass-border); border-radius: 24px; background: var(--surface); box-shadow: var(--shadow-glass); transition: border-color .2s, transform .2s; }
 .delta-card:hover { border-color: var(--accent); transform: translateY(-2px); }
 .delta-card.collected { border-color: var(--accent); }
 .delta-card-image { position: relative; display: grid; aspect-ratio: 16 / 8; place-items: center; background: linear-gradient(135deg, #1b2838, #394d61); color: #d7e4ef; font-size: 40px; font-weight: 700; }
 .delta-card-image img { width: 100%; height: 100%; object-fit: cover; }
-.delta-rarity { position: absolute; right: 10px; bottom: 10px; padding: 4px 8px; background: rgba(12, 19, 27, .82); color: #fff; font-size: 12px; }
+.delta-rarity { position: absolute; right: 12px; bottom: 12px; padding: 5px 10px; border: 1px solid rgba(255, 255, 255, .24); border-radius: 10px; background: rgba(12, 19, 27, .72); color: #fff; font-size: 12px; backdrop-filter: blur(12px); }
 .delta-card-body { padding: 16px; }
 .delta-card-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .delta-card-heading h2 { margin: 0; font-size: 18px; }
@@ -227,7 +227,7 @@ onMounted(loadCards);
 .delta-card-actions .ant-btn:first-child { margin-right: auto; }
 .delta-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 760px) {
-    .delta-page { padding: 20px 0 40px; }
+    .delta-page { padding: 0 0 24px; }
     .delta-header { align-items: flex-start; flex-direction: column; }
     .delta-header .ant-btn { width: 100%; }
     .delta-summary { grid-template-columns: 1fr 1fr; }
