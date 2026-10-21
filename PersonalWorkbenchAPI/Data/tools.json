@@ -59,6 +59,12 @@
     "icon": "SYS"
   },
   {
+    "name": "三角洲卡牌收集",
+    "route": "/tools/delta-cards",
+    "order": 100,
+    "icon": "CARD"
+  },
+  {
     "name": "加密工具箱",
     "route": "/tools/crypto",
     "order": 110,

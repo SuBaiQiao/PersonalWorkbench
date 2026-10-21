@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore;
+using PersonalWorkbench.Data;
 using PersonalWorkbench.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,6 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 // API 与业务服务由后端提供，页面由 PersonalWorkbenchWeb 构建。
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? "Data Source=Data/personal-workbench.db";
+builder.Services.AddDbContext<WorkbenchDbContext>(options => options.UseSqlite(connectionString));
 builder.Services.AddSingleton<IdentityGeneratorService>();
 builder.Services.AddSingleton<SqlCaseConverterService>();
 builder.Services.AddSingleton<AmountUppercaseService>();
@@ -17,6 +22,8 @@ builder.Services.AddSingleton<PortCheckService>();
 builder.Services.AddSingleton<ProcessNetworkMonitor>();
 builder.Services.AddSingleton<SystemStatusService>();
 builder.Services.AddSingleton<CollaborativeEditorService>();
+builder.Services.AddScoped<DeltaCardService>();
+builder.Services.AddScoped<DatabaseTransferService>();
 builder.Services.AddSingleton<CryptoService>();
 builder.Services.AddHostedService(serviceProvider => serviceProvider.GetRequiredService<AndroidMonitorService>());
 
@@ -29,6 +36,12 @@ if (builder.Environment.IsDevelopment() && Directory.Exists(webBuildPath))
 }
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var database = scope.ServiceProvider.GetRequiredService<WorkbenchDbContext>();
+    database.Database.EnsureCreated();
+}
 
 if (!app.Environment.IsDevelopment())
 {

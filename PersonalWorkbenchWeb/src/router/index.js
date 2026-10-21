@@ -15,6 +15,7 @@ export const router = createRouter({
         { path: '/tools/port-checker', component: () => import('../views/tools/PortCheckerView.vue'), meta: { title: '端口占用检查' } },
         { path: '/tools/collaborative-editor', component: () => import('../views/tools/CollaborativeEditorView.vue'), meta: { title: '协同文本编辑器' } },
         { path: '/tools/system-monitor', component: () => import('../views/tools/SystemMonitorView.vue'), meta: { title: '设备状态监控' } },
+        { path: '/tools/delta-cards', component: () => import('../views/tools/DeltaCardsView.vue'), meta: { title: '三角洲卡牌收集' } },
         { path: '/tools/crypto', component: () => import('../views/tools/CryptoView.vue'), meta: { title: '加密工具箱' } },
         { path: '/tools/code-generator', component: () => import('../views/tools/CodeGeneratorView.vue'), meta: { title: '二维码与条形码生成器' } },
         { path: '/:pathMatch(.*)*', component: () => import('../views/NotFoundView.vue'), meta: { title: '页面不存在' } }

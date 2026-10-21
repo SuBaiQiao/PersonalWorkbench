@@ -176,6 +176,18 @@ PersonalWorkbench/
 
 ## API 接口
 
+### 数据库导出与导入
+
+数据库功能使用 SQLite，卡牌收集数据默认保存在 `PersonalWorkbenchAPI/Data/personal-workbench.db`。
+
+```http
+GET /api/database/export
+POST /api/database/import
+Content-Type: multipart/form-data
+```
+
+导出接口返回完整的 SQLite 数据库备份文件。导入接口的表单字段名为 `file`，导入前会执行 SQLite 完整性检查，并校验当前应用所需的数据表；成功后整体覆盖当前数据库，保留备份中的全部表、索引和数据。页面中的导入操作会先要求确认，建议覆盖前先导出当前数据库。
+
 ### 加密工具箱
 
 打开 `/tools/crypto` 使用加密工具箱，支持：
