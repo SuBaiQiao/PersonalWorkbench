@@ -2,6 +2,7 @@
 import { api, getErrorMessage } from '../../api/client.js';
 import { copyWithFeedback } from '../../utils/clipboard.js';
 import { createStatus } from '../../utils/status.js';
+import CronInspector from '../../components/CronInspector.vue';
 
 const defaultForm = () => ({
     frequency: 'daily',
@@ -13,6 +14,7 @@ const defaultForm = () => ({
 });
 
 export default {
+    components: { CronInspector },
     data() {
         return {
             form: defaultForm(),
@@ -88,8 +90,8 @@ export default {
 <div id="cronGeneratorApp">
         <section class="page-intro" aria-labelledby="cron-title">
             <p class="eyebrow">SCHEDULE UTILITY / CRON</p>
-            <h1 id="cron-title">Cron 表达式生成器</h1>
-            <p class="intro-copy">选择常见的执行频率和时间参数，生成可用于 Linux、容器和定时任务系统的标准五字段 Cron 表达式。</p>
+            <h1 id="cron-title">Cron 工具箱</h1>
+            <p class="intro-copy">生成与校验标准五字段 Cron 表达式，查看中文规则说明，并按所选时区预览未来执行时间。</p>
         </section>
 
         <section class="panel converter-panel cron-panel" aria-labelledby="cron-form-title">
@@ -151,6 +153,7 @@ export default {
             </a-form>
         </section>
 
+        <CronInspector :expression="result.expression" />
         <section class="cron-note" aria-label="Cron 格式说明">
             <p><strong>字段顺序：</strong><code>分钟 小时 日期 月份 星期</code>。本工具生成的是标准五字段表达式，不包含 Quartz 的秒字段。</p>
         </section>

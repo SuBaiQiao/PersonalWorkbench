@@ -3,6 +3,7 @@ import AntDesignVue, { message } from 'ant-design-vue';
 import 'ant-design-vue/dist/reset.css';
 import './styles/site.css';
 import './styles/glass.css';
+import './styles/toolbox.css';
 import App from './App.vue';
 import { router } from './router/index.js';
 

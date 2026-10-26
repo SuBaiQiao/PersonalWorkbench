@@ -29,10 +29,16 @@
     "icon": "IMG"
   },
   {
-    "name": "Cron 表达式生成器",
+    "name": "Cron 工具箱",
     "route": "/tools/cron-generator",
     "order": 50,
     "icon": "CRON"
+  },
+  {
+    "name": "时间戳工具",
+    "route": "/tools/timestamp",
+    "order": 55,
+    "icon": "TIME"
   },
   {
     "name": "Android 集群设备监控",
@@ -75,5 +81,13 @@
     "route": "/tools/code-generator",
     "order": 120,
     "icon": "QR"
-  }
+  },
+  { "name": "JSON 工具箱", "route": "/tools/json-toolbox", "order": 130, "icon": "JSON" },
+  { "name": "文本差异对比", "route": "/tools/text-diff", "order": 140, "icon": "DIFF" },
+  { "name": "正则表达式测试", "route": "/tools/regex-tester", "order": 150, "icon": "REGEX" },
+  { "name": "UUID / 随机生成器", "route": "/tools/random-generator", "order": 160, "icon": "UUID" },
+  { "name": "JWT 解析", "route": "/tools/jwt-decoder", "order": 170, "icon": "JWT" },
+  { "name": "数据转代码", "route": "/tools/data-to-code", "order": 180, "icon": "CODE" },
+  { "name": "HTTP 请求工具", "route": "/tools/http-client", "order": 190, "icon": "HTTP" },
+  { "name": "图片工具箱", "route": "/tools/image-toolbox", "order": 200, "icon": "IMG" }
 ]

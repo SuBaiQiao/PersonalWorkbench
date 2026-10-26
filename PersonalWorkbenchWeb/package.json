@@ -8,6 +8,7 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
+    "test": "node --test tests/*.test.js",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
@@ -15,7 +16,13 @@
   "dependencies": {
     "ant-design-vue": "4.2.6",
     "axios": "1.20.0",
+    "cron-parser": "5.10.2",
+    "cronstrue": "3.37.0",
+    "diff": "9.0.0",
     "jsbarcode": "3.12.3",
+    "jsonc-parser": "3.3.1",
+    "jsonpath-plus": "11.2.1",
+    "luxon": "3.7.2",
     "qrcode": "1.5.4",
     "vue": "3.5.43",
     "vue-router": "^4.5.0"

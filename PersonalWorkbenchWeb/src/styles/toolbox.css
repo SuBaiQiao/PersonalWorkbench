@@ -1,0 +1,25 @@
+.utility-panel { padding: 26px; min-width: 0; }
+.utility-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; align-items: start; }
+.utility-stack { display: grid; gap: 20px; }
+.utility-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.utility-toolbar.spread { justify-content: space-between; }
+.utility-field { display: grid; gap: 8px; min-width: 0; color: var(--text-muted); font-size: 14px; }
+.utility-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 18px; }
+.utility-controls > .utility-field { flex: 1; min-width: min(100%,150px); }
+.utility-field + .utility-toolbar, .utility-gap { margin-top: 18px; }
+.utility-note { font-size: 13px; color: var(--text-muted); margin: 12px 0 0; overflow-wrap: anywhere; }
+.utility-code { font-family: Consolas,"SFMono-Regular",monospace; font-size: 13px; line-height: 1.7; }
+.utility-output { white-space: pre-wrap; overflow-wrap: anywhere; border: 1px solid var(--border); border-radius: 16px; padding: 18px; background: var(--well); color: var(--text); max-height: 540px; overflow: auto; margin: 0; }
+.utility-select { min-width: 150px; }
+.utility-panel h2 { margin: 0; font-size: 19px; }
+.utility-status { padding: 5px 11px; border-radius: 50px; background: var(--accent-soft); color: var(--accent-strong); font-size: 12px; font-weight: 650; }
+.utility-empty { padding: 36px 12px; text-align: center; color: var(--text-muted); }
+.utility-error { margin: 18px 0; }
+.utility-table-wrap { overflow: auto; max-height: 500px; }
+.utility-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.utility-table th,.utility-table td { padding: 10px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+.utility-table th { color: var(--text-muted); font-weight: 500; }
+.utility-file { display: block; width: 100%; color: var(--text-muted); }
+.utility-panel .ant-input-number { width: 100%; }
+.utility-panel .ant-tabs-content-holder { min-width: 0; }
+@media(max-width:800px) { .utility-grid { grid-template-columns: 1fr; } .utility-panel { padding: 20px; } }

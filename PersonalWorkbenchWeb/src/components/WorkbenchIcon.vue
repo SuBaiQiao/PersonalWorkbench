@@ -26,6 +26,11 @@ const paths = {
     cards: 'm8 2 13 4-5 16-13-4Z M8 7l8 2 M7 11l7 2 M6 15l5 1.5',
     lock: 'M5 10h14v12H5z M8 10V6a4 4 0 0 1 8 0v4 M12 15v3',
     qr: 'M3 3h6v6H3z M15 3h6v6h-6z M3 15h6v6H3z M15 15h3v3h3v3h-6z M12 3v3 M12 9v3H3 M15 12h6 M12 15v6',
+    braces: 'M8 3H6v6l-3 3 3 3v6h2 M16 3h2v6l3 3-3 3v6h-2 M10 9h4 M10 15h4',
+    diff: 'M4 3h6v18H4z M14 3h6v18h-6z M6 8h2 M16 8h2 M17 7v2 M6 15h2 M16 15h2',
+    regex: 'M3 15h6 M6 12v6 M14 4v8 M10 6l8 4 M18 6l-8 4 M17 17h3 M18.5 15.5v3',
+    shuffle: 'M3 6h3l12 12h3 M18 15l3 3-3 3 M3 18h3l4-4 M14 10l4-4h3 M18 3l3 3-3 3',
+    crop: 'M6 2v16h16 M2 6h16v16 M10 2v4 M2 10h4 M18 14h4 M14 18v4',
     check: 'm5 12 4 4L19 6',
     close: 'm6 6 12 12 M6 18 18 6'
 };
