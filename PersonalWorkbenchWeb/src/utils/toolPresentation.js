@@ -7,6 +7,7 @@ export const toolCategories = [
 ];
 
 const presentations = {
+    '/tools/file-manager': { category: 'files', icon: 'folder', tone: 'blue', description: '浏览磁盘目录，预览文件并在线编辑文本。', keywords: '磁盘 文件 文件夹 目录 管理 预览 在线 编辑 file explorer disk folder' },
     '/tools/video-player': { category: 'files', icon: 'video', tone: 'teal', description: '本地影像、HLS 与直播流，在一个播放器里打开。', keywords: '视频 播放器 video mp4 webm mkv avi m3u8 hls flv rtsp rtmp ts' },
     '/tools/json-toolbox': { category: 'develop', icon: 'braces', tone: 'amber', description: '格式化与查询，让复杂 JSON 清晰可读。', keywords: 'json jsonpath 格式化 压缩 树 校验' },
     '/tools/text-diff': { category: 'develop', icon: 'diff', tone: 'rose', description: '并排查看文本，快速找到增加与删除。', keywords: 'diff 文本 对比 差异 比较' },

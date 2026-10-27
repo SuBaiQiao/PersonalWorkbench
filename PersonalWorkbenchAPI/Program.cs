@@ -11,6 +11,7 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? "Data Source=Data/personal-workbench.db";
 builder.Services.AddDbContext<WorkbenchDbContext>(options => options.UseSqlite(connectionString));
 builder.Services.AddSingleton<IdentityGeneratorService>();
+builder.Services.AddSingleton<FileManagerService>();
 builder.Services.AddSingleton<MediaPlaybackService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<MediaPlaybackService>());
 builder.Services.AddSingleton<SqlCaseConverterService>();

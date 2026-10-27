@@ -21,6 +21,7 @@ PersonalWorkbench 是一个个人工具箱，使用 Vue 3 + Vite 构建前端，
 - HTTP 请求工具：编辑方法、请求头与原始请求体，查看响应和耗时，支持常用 cURL 命令导入/导出、取消和超时。请求从浏览器直接发出，受 CORS、HTTPS 和浏览器请求头限制，不携带浏览器 Cookie；响应读取上限 2 MB。
 - 图片工具箱：浏览器本地裁剪、等比缩放、PNG/JPEG/WebP 转换与质量设置、主要颜色提取和下载；限制 20 MB / 4000 万像素，动图导出为静态图。
 - 视频播放器：本地常见视频、完整 m3u8 文件夹、网络 HLS / FLV / TS，支持倍速、快进后退、截图及全屏；通过 FFmpeg 兼容播放 MKV / AVI / WMV 等编码，并接入 RTSP / RTMP 视频源。详见[视频播放器说明](docs/video-player.md)。
+- 磁盘文件管理：浏览服务器磁盘目录与文件详情，新建文件夹/文件，预览图片、PDF、音视频，在线编辑文本并检查保存冲突。
 - Android 集群设备监控：读取 `devices.txt`，通过 ADB 抓取设备屏幕并使用 WebSocket 实时推送到监控大屏。
 - 端口占用检查：检查本机 TCP/UDP 端口，并显示占用它的进程名称、PID 和监听状态。
 - 协同文本编辑器：通过 WebSocket 在多个浏览器之间同步文本，保留历史版本，并提供临时文件上传、下载、删除和粘贴图片上传。
@@ -425,6 +426,34 @@ GET /api/system/processes
 ### 协同文本编辑器
 
 打开 `/tools/collaborative-editor` 后，多个浏览器访问同一地址即可共享文本。文本会保存到 `Data/collaborative-editor/content.txt`，上传文件保存在同目录的 `uploads` 下。页面通过原生 WebSocket `/ws/collaborative` 广播文本和文件列表变化，并支持查看历史版本、恢复、复制、下载、删除以及粘贴图片自动上传。
+
+### 磁盘文件管理
+
+打开 `/tools/file-manager` 浏览 **API 所在机器**的磁盘目录。App 式菜单和左侧菜单都提供入口，并适配浅色、深色外观与手机屏幕。
+
+- 展示磁盘容量、文件夹与文件名称、类型、大小、创建/修改时间、完整路径及文件属性。
+- 支持地址栏、目录面包屑、返回上级、刷新、当前目录名称搜索、隐藏文件、排序和分页。
+- 支持新建文件夹和空文件；文本文件可预览、在线编辑、快捷键保存与下载。图片、PDF、音视频使用浏览器预览，其他格式提供下载。
+- 文本默认最多 2 MB，识别 UTF-8 / UTF-16 / UTF-32 BOM，可手动选择 GB18030 / GBK 等编码重新读取。保存可选择编码、BOM、换行方式；默认保留原文件设置。
+- 保存前校验原内容的 SHA-256 版本，检测到其他页面或程序已修改时返回 409 并保留编辑内容。同目录临时文件完整写入后再替换原文件，避免写入失败截断原文。
+
+在 `PersonalWorkbenchAPI/appsettings.json` 配置访问范围：
+
+```json
+"FileManager": {
+  "Roots": ["D:\\Shared", "D:\\Documents"],
+  "ReadOnly": false,
+  "MaxTextBytes": 2097152
+}
+```
+
+`Roots` 为空时列出服务端已就绪的本地固定磁盘、移动磁盘与内存盘；指定目录时只能访问这些目录及其子目录。`ReadOnly` 禁止新建与保存。操作始终受 API 运行账户的系统权限约束，不提权；不进入符号链接/目录联接，不支持 UNC 共享、设备路径与 NTFS 数据流。文件夹大小不递归统计，搜索只查找当前层。HTML / SVG 作为纯文本或附件处理，不在同源页面中执行；浏览器预览能力取决于其格式和解码器支持。
+
+当前工作台没有用户登录隔离，能访问文件管理 API 的客户端就拥有配置范围内的文件访问能力。部署到共享网络时应限定 `Roots`，并通过部署层的认证控制访问；可设置 `ReadOnly: true` 提供只读浏览。
+
+接口：`GET /api/files/roots`、`GET /api/files/list`、`GET /api/files/details`、`POST /api/files/entries`、`GET/PUT /api/files/text`、`GET /api/files/content`。查询参数中的 `path` 使用完整服务器路径。写入请求需 JSON 格式及 `X-Requested-With: XMLHttpRequest`；文本保存必须带上读取接口返回的 `version`。内容接口支持 HTTP Range，文件列表和文本响应不缓存。
+
+后端检查：`dotnet run --project tests/FileManagerChecks/FileManagerChecks.csproj`。若常规构建输出被正在运行的服务占用，可用 `dotnet build tests/FileManagerChecks/FileManagerChecks.csproj -o artifacts/file-manager-checks` 后执行 `dotnet artifacts/file-manager-checks/FileManagerChecks.dll`。
 
 ## 依赖注入
 

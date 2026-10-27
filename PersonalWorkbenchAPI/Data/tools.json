@@ -90,5 +90,6 @@
   { "name": "数据转代码", "route": "/tools/data-to-code", "order": 180, "icon": "CODE" },
   { "name": "HTTP 请求工具", "route": "/tools/http-client", "order": 190, "icon": "HTTP" },
   { "name": "图片工具箱", "route": "/tools/image-toolbox", "order": 200, "icon": "IMG" },
-  { "name": "视频播放器", "route": "/tools/video-player", "order": 210, "icon": "VIDEO" }
+  { "name": "视频播放器", "route": "/tools/video-player", "order": 210, "icon": "VIDEO" },
+  { "name": "磁盘文件管理", "route": "/tools/file-manager", "order": 220, "icon": "FILES" }
 ]
