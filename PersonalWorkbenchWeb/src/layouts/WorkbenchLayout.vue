@@ -6,6 +6,7 @@ import { api, getErrorMessage } from '../api/client.js';
 import WorkbenchIcon from '../components/WorkbenchIcon.vue';
 import WorkbenchSidebar from '../components/WorkbenchSidebar.vue';
 import MenuThemePicker from '../components/MenuThemePicker.vue';
+import ToolSearch from '../components/ToolSearch.vue';
 import { isDark, menuTheme, sidebarCollapsed, toggleAppearance } from '../styles/theme.js';
 import { getToolPresentation } from '../utils/toolPresentation.js';
 import { downloadBlob } from '../utils/files.js';
@@ -14,6 +15,11 @@ import { downloadBlob } from '../utils/files.js';
 const transferring = ref(false);
 const importInput = ref(null);
 const mainContent = ref(null);
+const workspaceScroll = ref(null);
+const fullscreenAvailable = ref(false);
+const isContentFullscreen = ref(false);
+const fullscreenPending = ref(false);
+let ownsContentFullscreen = false;
 const route = useRoute();
 const isHome = computed(() => route.path === '/');
 const isSidebar = computed(() => menuTheme.value === 'sidebar');
@@ -33,7 +39,7 @@ const isHeaderCompact = ref(false);
  * 监听器只读取滚动位置并更新布尔状态，不在每次滚动时测量布局。
  */
 function updateHeaderCompact() {
-    const scrollTop = Math.max(0, window.scrollY);
+    const scrollTop = Math.max(0, workspaceScroll.value?.scrollTop || 0);
     if (scrollTop > 48) isHeaderCompact.value = true;
     else if (scrollTop <= 16) isHeaderCompact.value = false;
 }
@@ -41,9 +47,40 @@ function updateHeaderCompact() {
 onMounted(() => {
     // 兼容浏览器恢复滚动位置后直接进入页面的情况。
     updateHeaderCompact();
-    window.addEventListener('scroll', updateHeaderCompact, { passive: true });
+    fullscreenAvailable.value = Boolean(document.fullscreenEnabled && document.documentElement.requestFullscreen);
+    document.addEventListener('fullscreenchange', syncContentFullscreen);
 });
-onBeforeUnmount(() => window.removeEventListener('scroll', updateHeaderCompact));
+onBeforeUnmount(() => {
+    document.removeEventListener('fullscreenchange', syncContentFullscreen);
+    if (ownsContentFullscreen && document.fullscreenElement === document.documentElement)
+        document.exitFullscreen().catch(() => {});
+});
+
+/** 同步 Esc、浏览器菜单及播放器自身全屏引起的状态变化，不把视频全屏误当成内容全屏。 */
+function syncContentFullscreen() {
+    isContentFullscreen.value = ownsContentFullscreen && document.fullscreenElement === document.documentElement;
+    if (!document.fullscreenElement) ownsContentFullscreen = false;
+}
+
+/**
+ * 对文档根节点请求原生全屏，再仅展示中间内容。
+ * 保留 body 内的弹窗、下拉框和消息，使全屏中的文件预览、编辑及保存提示仍可正常使用。
+ */
+async function toggleContentFullscreen() {
+    if (fullscreenPending.value) return;
+    fullscreenPending.value = true;
+    try {
+        if (isContentFullscreen.value) await document.exitFullscreen();
+        else {
+            ownsContentFullscreen = true;
+            await document.documentElement.requestFullscreen();
+        }
+        syncContentFullscreen();
+    } catch {
+        if (!document.fullscreenElement) ownsContentFullscreen = false;
+        message.error('无法切换全屏，请检查浏览器是否允许此页面使用全屏功能。');
+    } finally { fullscreenPending.value = false; }
+}
 
 /** 打开手机菜单，并记录本次打开来源，供关闭动画结束后恢复键盘焦点。 */
 function openMobileMenu() {
@@ -69,6 +106,12 @@ watch(menuTheme, () => { mobileMenuOpen.value = false; });
 watch(() => route.path, async () => {
     mobileMenuOpen.value = false;
     await nextTick();
+    // 主滚动容器已从 window 移入工作区，路由切换时也要重置该容器的位置。
+    if (workspaceScroll.value) {
+        workspaceScroll.value.scrollTop = 0;
+        workspaceScroll.value.scrollLeft = 0;
+    }
+    updateHeaderCompact();
     mainContent.value?.focus({ preventScroll: true });
 });
 
@@ -132,13 +175,15 @@ function importDatabase(event) {
 
 <template>
     <!-- 主题仅改变导航和容器样式，主内容插槽始终挂在同一位置，保留工具组件的编辑状态。 -->
-    <div class="workbench-layout" :data-menu-theme="menuTheme" :class="{ 'sidebar-collapsed': sidebarCollapsed, 'has-breadcrumb': !isHome, 'is-scrolled': isHeaderCompact }">
+    <div class="workbench-layout" :data-menu-theme="menuTheme" :class="{ 'sidebar-collapsed': sidebarCollapsed, 'has-breadcrumb': !isHome, 'is-scrolled': isHeaderCompact, 'is-content-fullscreen': isContentFullscreen }">
     <a class="skip-link" href="#main-content">跳至主要内容</a>
     <!-- 桌面固定侧栏与手机抽屉共享内容组件，通过 CSS 断点决定可见的导航入口。 -->
     <aside v-if="isSidebar" class="workbench-sidebar" aria-label="左侧工具菜单"><WorkbenchSidebar :collapsed="sidebarCollapsed" @toggle-collapse="sidebarCollapsed = !sidebarCollapsed" /></aside>
     <a-drawer v-if="isSidebar" v-model:open="mobileMenuOpen" title="工具导航" placement="left" :width="284" root-class-name="workbench-mobile-drawer" :body-style="{ padding: 0 }" @after-open-change="restoreMobileMenuFocus">
         <WorkbenchSidebar mobile @navigate="mobileMenuOpen = false" />
     </a-drawer>
+    <!-- 页脚位于滚动容器之外；导航与正文在容器中配合吸附，页面本身不再滚动。 -->
+    <div ref="workspaceScroll" class="workspace-scroll" @scroll.passive="updateHeaderCompact">
     <!-- App 主题显示品牌导航；侧栏主题显示当前工具标题，两种布局共用右侧操作区。 -->
     <header class="app-header">
         <div class="header-inner">
@@ -151,6 +196,7 @@ function importDatabase(event) {
                 <span class="workspace-page-icon"><WorkbenchIcon :name="pageIcon" /></span>
                 <div><span class="workspace-label">PERSONAL WORKSPACE</span><strong>{{ isHome ? '工具总览' : route.meta.title }}</strong></div>
             </div>
+            <ToolSearch />
             <div class="header-actions">
                 <nav v-if="!isSidebar" class="primary-nav" aria-label="工具导航">
                     <RouterLink to="/" :class="{ 'is-active': isHome }"><WorkbenchIcon name="grid" /><span>工具台</span></RouterLink>
@@ -178,9 +224,12 @@ function importDatabase(event) {
     <main id="main-content" ref="mainContent" class="app-shell" :class="{ 'is-home': isHome }" tabindex="-1">
         <slot />
     </main>
+    </div>
     <footer class="app-footer">
         <span class="footer-brand"><WorkbenchIcon name="grid" />Personal Workbench</span>
-        <span>为日常而造 · 测试数据请勿用于真实业务</span>
+        <span class="footer-copy">为日常而造 · 测试数据请勿用于真实业务</span>
+        <button class="workspace-fullscreen-button" type="button" aria-label="内容全屏" :title="fullscreenAvailable ? '全屏显示中间内容，按 Esc 退出' : '当前浏览器不支持网页全屏，可使用浏览器自身的全屏功能'" :disabled="!fullscreenAvailable || fullscreenPending" @click="toggleContentFullscreen"><WorkbenchIcon name="fullscreen" /><span>内容全屏</span></button>
     </footer>
+    <button v-if="isContentFullscreen" class="workspace-fullscreen-button fullscreen-exit-button" type="button" aria-label="退出内容全屏" :disabled="fullscreenPending" @click="toggleContentFullscreen"><WorkbenchIcon name="fullscreen-exit" /><span>退出全屏</span><kbd>Esc</kbd></button>
     </div>
 </template>

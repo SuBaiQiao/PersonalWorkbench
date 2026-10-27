@@ -1,31 +1,31 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import WorkbenchIcon from '../components/WorkbenchIcon.vue';
 import { useToolCatalog } from '../composables/useToolCatalog.js';
 import { toolCategories } from '../utils/toolPresentation.js';
+import { useToolSearch } from '../composables/useToolSearch.js';
+import { searchTools } from '../utils/toolSearch.js';
 
-// 目录数据与侧栏共用缓存；首页的搜索词和分类只保存在当前页面，不影响侧栏搜索。
+// 顶部搜索与侧栏共用搜索词及规则，分类仅影响首页卡片。
 const { tools, presentedTools, loading, errorMessage, loadTools } = useToolCatalog();
-const search = ref('');
+const { query: search, clearSearch } = useToolSearch();
 const activeCategory = ref('all');
 
 // 分类与关键词采用交集筛选，搜索简介及别名可覆盖用户习惯的功能叫法。
 const filteredTools = computed(() => {
-    const query = search.value.trim().toLocaleLowerCase();
-    return presentedTools.value.filter(tool =>
-        (activeCategory.value === 'all' || tool.category === activeCategory.value)
-        && (!query || `${tool.name} ${tool.description} ${tool.keywords}`.toLocaleLowerCase().includes(query))
-    );
+    return searchTools(presentedTools.value, search.value).filter(tool => activeCategory.value === 'all' || tool.category === activeCategory.value);
 });
+// 开始新搜索时恢复全部分类，避免上一次分类把相关工具隐藏。
+watch(search, value => { if (value.trim()) activeCategory.value = 'all'; });
 // 始终保留“全部工具”，其余分类只在后端目录确实包含对应工具时显示。
 const categories = computed(() => toolCategories.filter(category => category.id === 'all' || presentedTools.value.some(tool => tool.category === category.id)));
 
 /** 清空首页的两个筛选条件，供无搜索结果时恢复完整目录。 */
-function resetFilters() { search.value = ''; activeCategory.value = 'all'; }
+function resetFilters() { clearSearch(); activeCategory.value = 'all'; }
 </script>
 
 <template>
-    <section class="home-hero" aria-labelledby="home-title">
+    <section v-if="!search.trim()" class="home-hero" aria-labelledby="home-title">
         <div class="home-hero-copy">
             <div class="hero-label"><span class="signal-dot" aria-hidden="true"></span>你的个人效率空间</div>
             <h1 id="home-title">把时间，<br />留给<span>更好的创造。</span></h1>
@@ -43,8 +43,7 @@ function resetFilters() { search.value = ''; activeCategory.value = 'all'; }
     </section>
     <section id="tools" class="home-tools" aria-labelledby="tools-title">
         <div class="section-heading home-section-heading">
-            <div><p class="panel-kicker">YOUR EVERYDAY ESSENTIALS</p><h2 id="tools-title">好工具，一触即达<span class="collection-count">{{ tools.length }}</span></h2></div>
-            <div class="tool-search"><WorkbenchIcon name="search" /><input v-model="search" type="search" aria-label="搜索工具" placeholder="搜索工具、功能或关键词" /><button v-if="search" type="button" aria-label="清空搜索" @click="search = ''"><WorkbenchIcon name="close" /></button></div>
+            <div><p class="panel-kicker">YOUR EVERYDAY ESSENTIALS</p><h1 v-if="search.trim()" id="tools-title" class="tool-search-title">搜索结果<span class="collection-count">{{ filteredTools.length }}</span></h1><h2 v-else id="tools-title">好工具，一触即达<span class="collection-count">{{ tools.length }}</span></h2></div>
         </div>
         <div class="tool-collection-toolbar">
             <div class="category-filters" role="group" aria-label="工具分类"><button v-for="category in categories" :key="category.id" type="button" :class="{ selected: activeCategory === category.id }" :aria-pressed="activeCategory === category.id" @click="activeCategory = category.id">{{ category.name }}</button></div>
@@ -63,3 +62,7 @@ function resetFilters() { search.value = ''; activeCategory.value = 'all'; }
         <p class="home-closing-note"><WorkbenchIcon name="sparkles" />一点小工具，释放更多可能。</p>
     </section>
 </template>
+
+<style scoped>
+.home-section-heading .tool-search-title { margin: 0; font-size: 22px; letter-spacing: -.02em; }
+</style>

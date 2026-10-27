@@ -9,6 +9,8 @@ const paths = {
     menu: 'M4 6h16 M4 12h16 M4 18h16',
     collapse: 'M4 3v18 M20 6l-6 6 6 6 M14 12H8',
     expand: 'M4 3v18 M10 6l6 6-6 6 M8 12h12',
+    fullscreen: 'M9 3H3v6 M15 3h6v6 M3 15v6h6 M21 15v6h-6',
+    'fullscreen-exit': 'M3 9h6V3 M21 9h-6V3 M9 21v-6H3 M15 21v-6h6',
     search: 'M20.5 20.5 16 16 M18 10.5a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0',
     arrow: 'M6 18 18 6 M6 6h12v12',
     back: 'm10 5-7 7 7 7 M3 12h18',

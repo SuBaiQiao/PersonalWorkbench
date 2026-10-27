@@ -3,7 +3,11 @@
  * 布局由容器的 data-menu-theme 决定，配色由根节点的 data-theme 决定，两者可自由组合。
  * 本文件在 glass.css 之后加载，仅覆盖导航和侧栏布局，工具内部的功能样式继续沿用原实现。
  */
-.workbench-layout { --toolbar-expanded-height: 78px; --sticky-header-top: 20px; min-height: 100vh; }
+.workbench-layout { --toolbar-expanded-height: 78px; --toolbar-compact-height: 64px; --sticky-header-top: 20px; display: flex; height: 100dvh; min-height: 0; flex-direction: column; overflow: hidden; }
+
+/* 将滚动范围限定在工作区，页脚始终占据窗口底部的一行，不遮挡正文末尾。 */
+html, body, #app { height: 100%; min-height: 0; overflow: hidden; }
+.workspace-scroll { position: relative; min-height: 0; flex: 1; overflow: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
 
 /* 主题入口与弹层：使用实色背景遮住后方内容，保证预览选项不会与首页文字重叠。 */
 .menu-theme-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 13px; border: 1px solid var(--border); border-radius: 15px; color: var(--text-muted); background: transparent; font-size: 13px; font-weight: 500; transition: background 180ms, color 180ms; }
@@ -96,7 +100,7 @@
 .workbench-layout[data-menu-theme="sidebar"] .app-header { top: var(--sticky-header-top); width: calc(100% - var(--sidebar-width)); margin: 0 0 0 var(--sidebar-width); }
 .workbench-layout[data-menu-theme="sidebar"] .header-inner { min-height: 89px; padding: 16px 32px; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: var(--surface); box-shadow: none; }
 .workbench-layout[data-menu-theme="sidebar"] .app-shell, .workbench-layout[data-menu-theme="sidebar"] .app-footer { width: calc(100% - var(--sidebar-width)); margin-left: var(--sidebar-width); padding-inline: clamp(24px, 3vw, 48px); }
-.workbench-layout[data-menu-theme="sidebar"] .app-shell { min-height: calc(100vh - 172px); padding-top: 30px; padding-bottom: 48px; }
+.workbench-layout[data-menu-theme="sidebar"] .app-shell { min-height: 0; padding-top: 30px; padding-bottom: 32px; }
 .workbench-layout[data-menu-theme="sidebar"] .app-footer { margin-top: 0; }
 .workbench-layout[data-menu-theme="sidebar"] .tool-breadcrumb { margin-bottom: 22px; }
 .workspace-heading { display: flex; min-width: 0; align-items: center; gap: 12px; }
@@ -147,7 +151,7 @@
     .workbench-layout[data-menu-theme="sidebar"] .app-header { width: 100%; margin-left: 0; }
     .workbench-layout[data-menu-theme="sidebar"] .header-inner { min-height: 76px; padding: 12px 20px; gap: 12px; }
     .workbench-layout[data-menu-theme="sidebar"] .app-shell, .workbench-layout[data-menu-theme="sidebar"] .app-footer { width: 100%; margin-left: 0; padding-inline: 24px; }
-    .workbench-layout[data-menu-theme="sidebar"] .app-shell { min-height: calc(100vh - 160px); }
+    .workbench-layout[data-menu-theme="sidebar"] .app-shell { min-height: 0; }
     .workbench-layout[data-menu-theme="sidebar"] .workspace-label { display: none; }
     .menu-theme-button { width: 44px; padding: 0; border-radius: 50%; }
     .menu-theme-button > span, .menu-theme-button > .workbench-icon:last-child { display: none; }
@@ -196,11 +200,11 @@
 /* 紧凑态保留完整控件和至少 44px 的面包屑行，仅收紧顶部空隙与导航内边距。 */
 .workbench-layout.is-scrolled { --sticky-header-top: 8px; }
 .workbench-layout[data-menu-theme="sidebar"].is-scrolled { --sticky-header-top: 0px; }
-.workbench-layout.is-scrolled .header-inner { min-height: 64px; padding-block: 8px; }
+.workbench-layout.is-scrolled .header-inner { min-height: var(--toolbar-compact-height); padding-block: 8px; }
 .workbench-layout.is-scrolled .app-header .tool-breadcrumb { margin-top: 6px; }
 /* 只遮住收紧后实际可见的顶部区域，避免正文文字从顶部边缘和两行导航的缝隙中穿过。 */
-.workbench-layout.is-scrolled .app-header::before { position: absolute; z-index: -1; top: calc(-1 * var(--sticky-header-top)); right: 0; left: 0; height: calc(64px + var(--sticky-header-top)); background: var(--bg); content: ''; }
-.workbench-layout.has-breadcrumb.is-scrolled .app-header::before { height: calc(114px + var(--sticky-header-top)); }
+.workbench-layout.is-scrolled .app-header::before { position: absolute; z-index: -1; top: calc(-1 * var(--sticky-header-top)); right: 0; left: 0; height: calc(var(--toolbar-compact-height) + var(--sticky-header-top)); background: var(--bg); content: ''; }
+.workbench-layout.has-breadcrumb.is-scrolled .app-header::before { height: calc(var(--toolbar-compact-height) + 50px + var(--sticky-header-top)); }
 
 @media (max-width: 800px) {
     .workbench-layout[data-menu-theme="app"] { --toolbar-expanded-height: 70px; --sticky-header-top: 12px; }
@@ -211,4 +215,45 @@
 }
 @media (prefers-reduced-transparency: reduce) {
     .workbench-layout .app-header .tool-breadcrumb { -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+/* 覆盖整页滚动时代的最小高度和底部大留白；短页面也不会将页脚向下推走。 */
+.workbench-layout .app-shell { min-height: 0; padding-bottom: 32px; }
+.workbench-layout .app-footer { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; flex-shrink: 0; align-items: center; gap: 6px 16px; margin-top: 0; padding-block: 6px max(6px, env(safe-area-inset-bottom)); }
+.footer-copy { min-width: 0; text-align: right; overflow-wrap: anywhere; }
+.workspace-fullscreen-button { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 7px; padding: 0 11px; border: 1px solid var(--border); border-radius: 12px; color: var(--text-muted); background: var(--surface-raised); font-size: 12px; cursor: pointer; }
+.workspace-fullscreen-button:hover:not(:disabled) { color: var(--accent-strong); background: var(--accent-soft); }
+.workspace-fullscreen-button:disabled { opacity: .5; cursor: not-allowed; }
+.workspace-fullscreen-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.fullscreen-exit-button { position: fixed; top: max(12px, env(safe-area-inset-top)); right: max(20px, env(safe-area-inset-right)); z-index: 120; box-shadow: var(--shadow-soft); }
+.fullscreen-exit-button kbd { color: var(--text-subtle); font: inherit; }
+
+/* 原生全屏由整个文档承载，视觉上只显示正文；工具组件不重新挂载，编辑状态和滚动位置继续保留。 */
+.workbench-layout.is-content-fullscreen .app-header, .workbench-layout.is-content-fullscreen .app-footer, .workbench-layout.is-content-fullscreen .workbench-sidebar { display: none; }
+.workbench-layout.is-content-fullscreen .app-shell { width: 100%; min-height: 100%; margin: 0; padding: 72px clamp(16px, 3vw, 48px) 32px; }
+.workbench-layout.is-content-fullscreen { background: var(--bg); }
+@media (max-width: 600px) {
+    .workbench-layout .app-footer { grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; }
+    .footer-brand { grid-column: 1; grid-row: 1; font-size: 11px; }
+    .footer-copy { grid-column: 1; grid-row: 2; text-align: left; font-size: 10px; }
+    .app-footer > .workspace-fullscreen-button { grid-column: 2; grid-row: 1 / span 2; padding-inline: 8px; }
+    .fullscreen-exit-button { right: 12px; }
+}
+
+/* 宽屏搜索居中；窄屏独占顶栏第二行，避免挤压标题、菜单和数据管理按钮。 */
+.workbench-layout .header-inner > .brand, .workbench-layout .header-actions { flex-shrink: 0; }
+.workbench-layout .workspace-heading { max-width: 260px; }
+@media (max-width: 1100px) {
+    .workbench-layout .header-inner { flex-wrap: wrap; gap: 8px 12px; }
+    .workbench-layout .header-actions { margin-left: auto; }
+    .workbench-layout[data-menu-theme="app"] { --toolbar-expanded-height: 120px; --toolbar-compact-height: 112px; }
+    .workbench-layout[data-menu-theme="sidebar"] { --toolbar-expanded-height: 128px; --toolbar-compact-height: 112px; }
+}
+@media (max-width: 800px) { .workbench-layout[data-menu-theme="app"] { --toolbar-expanded-height: 118px; } }
+@media (max-width: 900px) { .workbench-layout[data-menu-theme="sidebar"] { --toolbar-expanded-height: 120px; } }
+@media (max-width: 600px) {
+    .workbench-layout .header-inner { column-gap: 8px; }
+    .workbench-layout .workspace-heading { max-width: calc(100% - 152px); }
+    .workbench-layout[data-menu-theme="app"] { --toolbar-expanded-height: 116px; }
+    .workbench-layout[data-menu-theme="sidebar"] { --toolbar-expanded-height: 120px; }
 }

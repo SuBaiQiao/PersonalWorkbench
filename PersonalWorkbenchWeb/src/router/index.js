@@ -2,7 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 export const router = createRouter({
     history: createWebHistory(),
-    scrollBehavior: () => ({ top: 0 }),
+    // 页面由工作区容器独立滚动，切换路由时由 WorkbenchLayout 重置位置。
+    scrollBehavior: () => false,
     routes: [
         { path: '/', component: () => import('../views/HomeView.vue'), meta: { title: '工具台' } },
         { path: '/tools/file-manager', component: () => import('../views/tools/FileManagerView.vue'), meta: { title: '磁盘文件管理' } },
