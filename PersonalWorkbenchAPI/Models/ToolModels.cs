@@ -1,10 +1,26 @@
 namespace PersonalWorkbench.Models;
 
+/// <summary>三级联动中的可选叶节点；不设区县的城市使用城市自身的六位代码。</summary>
+/// <param name="Code">六位地区代码，生成能力由所属省级节点决定。</param>
+/// <param name="Name">地区显示名称。</param>
 public sealed record AreaCounty(string Code, string Name);
 
+/// <summary>市级行政区或为保持三级联动而补充的分组，例如“省直辖县级行政区划”。</summary>
+/// <param name="Code">市级行政区或联动分组的六位代码。</param>
+/// <param name="Name">城市或分组名称。</param>
+/// <param name="Counties">所属区县与特殊城市叶节点。</param>
 public sealed record AreaCity(string Code, string Name, IReadOnlyList<AreaCounty> Counties);
 
-public sealed record AreaProvince(string Code, string Name, IReadOnlyList<AreaCity> Cities);
+/// <summary>省级区划节点，将地区浏览与身份证生成能力分开表达。</summary>
+/// <param name="Code">省级地区代码；港澳台保留数据源自定义编码，详见快照说明。</param>
+/// <param name="Name">省、自治区、直辖市或特别行政区的名称。</param>
+/// <param name="Cities">所属城市与联动分组。</param>
+/// <param name="SupportsIdentityGeneration">是否允许使用该节点下的代码生成大陆居民身份证测试号码。</param>
+public sealed record AreaProvince(
+    string Code,
+    string Name,
+    IReadOnlyList<AreaCity> Cities,
+    bool SupportsIdentityGeneration = true);
 
 public sealed class IdentityGenerationRequest
 {

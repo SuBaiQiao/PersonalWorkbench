@@ -32,6 +32,13 @@ export default {
         selectedProvince() {
             return this.areas.find(area => area.code === this.form.provinceCode);
         },
+        /**
+         * 港澳台节点由后端明确标记为不支持生成，但仍保留完整区划供浏览。
+         * 未选择省份时允许全国随机，具体可用编码范围由后端统一过滤。
+         */
+        supportsIdentityGeneration() {
+            return this.selectedProvince?.supportsIdentityGeneration !== false;
+        },
         cityOptions() {
             return (this.selectedProvince?.cities ?? []).map(city => ({ label: city.name, value: city.code }));
         },
@@ -56,6 +63,8 @@ export default {
 
         /** 根据当前表单参数请求后端生成测试身份数据。 */
         async generateIdentities() {
+            // 同时拦截按钮以外的表单调用路径；真实编码规则仍由后端最终校验。
+            if (!this.supportsIdentityGeneration) return;
             this.loading = true;
             this.status = createStatus('正在请求后端生成…');
 
@@ -128,16 +137,18 @@ export default {
                         <legend>户籍地区</legend>
                         <div class="field-grid field-grid-3">
                             <a-form-item label="省 / 直辖市">
-                                <a-select v-model:value="form.provinceCode" :options="provinceOptions" placeholder="随机省份" allow-clear v-on:change="handleProvinceChange"></a-select>
+                                <a-select v-model:value="form.provinceCode" :options="provinceOptions" placeholder="随机省份" show-search option-filter-prop="label" allow-clear v-on:change="handleProvinceChange"></a-select>
                             </a-form-item>
                             <a-form-item label="城市">
-                                <a-select v-model:value="form.cityCode" :options="cityOptions" placeholder="随机城市" allow-clear :disabled="!form.provinceCode" v-on:change="handleCityChange"></a-select>
+                                <a-select v-model:value="form.cityCode" :options="cityOptions" placeholder="随机城市" show-search option-filter-prop="label" allow-clear :disabled="!form.provinceCode" v-on:change="handleCityChange"></a-select>
                             </a-form-item>
                             <a-form-item label="区 / 县">
-                                <a-select v-model:value="form.countyCode" :options="countyOptions" placeholder="随机区县" allow-clear :disabled="!form.cityCode"></a-select>
+                                <a-select v-model:value="form.countyCode" :options="countyOptions" placeholder="随机区县" show-search option-filter-prop="label" allow-clear :disabled="!form.cityCode"></a-select>
                             </a-form-item>
                         </div>
                     </fieldset>
+
+                    <a-alert v-if="!supportsIdentityGeneration" message="港澳台地区可浏览区划；当前地区使用数据源自定义编码，不用于生成大陆居民身份证号码。" type="info" show-icon></a-alert>
 
                     <div class="field-grid field-grid-3">
                         <a-form-item label="出生日期" extra="留空则随机生成 1960–2005 年日期">
@@ -152,7 +163,7 @@ export default {
                     </div>
 
                     <div class="form-actions">
-                        <a-button type="primary" html-type="button" :loading="loading" v-on:click="generateIdentities">生成测试数据</a-button>
+                        <a-button type="primary" html-type="button" :loading="loading" :disabled="!supportsIdentityGeneration" v-on:click="generateIdentities">生成测试数据</a-button>
                     </div>
                     <a-alert v-if="status.message" :message="status.message" :type="status.type" show-icon></a-alert>
                 </a-form>

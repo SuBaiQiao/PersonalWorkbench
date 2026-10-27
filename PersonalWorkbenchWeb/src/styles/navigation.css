@@ -1,0 +1,179 @@
+/*
+ * 菜单布局样式：App 式菜单与左侧纵向菜单共用现有浅色 / 深色语义变量。
+ * 布局由容器的 data-menu-theme 决定，配色由根节点的 data-theme 决定，两者可自由组合。
+ * 本文件在 glass.css 之后加载，仅覆盖导航和侧栏布局，工具内部的功能样式继续沿用原实现。
+ */
+.workbench-layout { min-height: 100vh; }
+
+/* 主题入口与弹层：使用实色背景遮住后方内容，保证预览选项不会与首页文字重叠。 */
+.menu-theme-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 13px; border: 1px solid var(--border); border-radius: 15px; color: var(--text-muted); background: transparent; font-size: 13px; font-weight: 500; transition: background 180ms, color 180ms; }
+.menu-theme-button:hover, .menu-theme-button[aria-expanded="true"] { color: var(--accent); background: var(--accent-soft); }
+.menu-theme-button > .workbench-icon:last-child { width: 12px; }
+.menu-theme-popover .ant-popover-inner { padding: 20px; border: 1px solid var(--glass-border); border-radius: 22px; background: var(--bg); box-shadow: var(--shadow-float); }
+.menu-theme-heading { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; color: var(--text); }
+.menu-theme-heading strong { font-size: 15px; }
+.menu-theme-heading > span { color: var(--text-muted); font-size: 12px; }
+.menu-theme-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; width: 328px; max-width: calc(100vw - 72px); }
+.menu-theme-option { display: flex; min-width: 0; flex-direction: column; align-items: stretch; gap: 8px; padding: 10px; border: 1px solid var(--border); border-radius: 15px; color: var(--text); background: var(--surface); text-align: left; transition: border-color 180ms, background 180ms; }
+.menu-theme-option:hover { border-color: var(--accent); }
+.menu-theme-option.selected { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+.menu-theme-option-title { display: flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.menu-theme-option-title > .workbench-icon { width: 15px; height: 15px; }
+.menu-theme-option-title > .workbench-icon:last-child:not(:first-child) { margin-left: auto; color: var(--accent); }
+.menu-theme-option-description { color: var(--text-muted); font-size: 10px; white-space: nowrap; }
+.menu-theme-footnote { margin: 16px 0 0; color: var(--text-subtle); font-size: 11px; }
+/* 预览图完全由 CSS 绘制，继承当前配色；只是布局示意，不加载图片或额外工具页面。 */
+.menu-theme-preview { position: relative; display: block; height: 86px; overflow: hidden; border: 1px solid var(--border); border-radius: 9px; background: var(--bg); }
+.preview-header { position: absolute; top: 7px; right: 8px; left: 8px; height: 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface-raised); }
+.preview-header::before { display: block; width: 5px; height: 5px; margin: 3px 4px; border-radius: 2px; background: var(--accent); content: ''; }
+.preview-content { position: absolute; top: 28px; right: 11px; bottom: 10px; left: 11px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.preview-content i { border: 1px solid var(--border); border-radius: 5px; background: var(--surface-raised); }
+.preview-app .preview-content i::before { display: block; width: 8px; height: 8px; margin: 4px; border-radius: 3px; background: var(--accent-soft); content: ''; }
+.preview-sidebar .preview-header { top: 0; right: 0; left: 35px; height: 18px; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; }
+.preview-sidebar .preview-header::before { width: 21px; height: 3px; margin: 7px; background: var(--border-strong); }
+.preview-sidebar .preview-content { top: 28px; left: 44px; grid-template-columns: repeat(2, 1fr); }
+.preview-sidebar .preview-content i:nth-child(n+5) { display: none; }
+.preview-sidebar > .preview-sidebar { position: absolute; top: 0; bottom: 0; left: 0; display: flex; width: 35px; flex-direction: column; gap: 6px; padding: 12px 5px; border-right: 1px solid var(--border); background: var(--surface-raised); }
+.preview-sidebar > .preview-sidebar i { height: 5px; border-radius: 2px; background: var(--border); }
+.preview-sidebar > .preview-sidebar i:first-child { background: var(--accent); }
+
+/* 桌面侧栏宽度统一由变量控制，标题栏、主内容与页脚使用同一变量预留空间。 */
+.workbench-layout[data-menu-theme="sidebar"] { --sidebar-width: 264px; }
+.workbench-layout[data-menu-theme="sidebar"].sidebar-collapsed { --sidebar-width: 80px; }
+.workbench-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 110; width: var(--sidebar-width); border-right: 1px solid var(--border); background: var(--surface-raised); -webkit-backdrop-filter: blur(28px); backdrop-filter: blur(28px); }
+.sidebar-content { display: flex; height: 100%; min-height: 0; flex-direction: column; color: var(--text); }
+.sidebar-brand { display: flex; min-height: 89px; align-items: center; padding: 18px 22px; }
+.sidebar-brand .brand { gap: 11px; min-width: 0; }
+.sidebar-brand .brand-mark { width: 39px; height: 39px; border-radius: 12px; }
+.sidebar-brand .brand-wordmark { font-size: 19px; }
+.sidebar-brand .brand-wordmark > span { font-size: 10px; letter-spacing: .06em; }
+.sidebar-overview { flex-shrink: 0; padding: 4px 14px 10px; }
+/* 导航项保留至少 44px 的操作高度；选中状态同时使用背景、边缘标记和字重表达。 */
+.sidebar-link { position: relative; display: flex; min-width: 0; min-height: 44px; align-items: center; gap: 11px; margin-bottom: 3px; padding: 9px 12px; border: 1px solid transparent; border-radius: 10px; color: var(--text-muted); font-size: 13px; text-decoration: none; transition: color 180ms, background 180ms, border-color 180ms; }
+.sidebar-link > .workbench-icon { width: 18px; height: 18px; }
+.sidebar-link:hover { color: var(--text); background: var(--surface-soft); }
+.sidebar-link.is-active { border-color: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent-strong); background: var(--accent-soft); font-weight: 600; }
+.sidebar-link.is-active::before { position: absolute; top: 12px; bottom: 12px; left: -15px; width: 3px; border-radius: 0 3px 3px 0; background: var(--accent); content: ''; }
+.sidebar-link-label { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar-tool-count { display: grid; min-width: 24px; height: 21px; padding: 0 5px; place-items: center; border-radius: 6px; color: var(--text-subtle); background: var(--surface-soft); font-size: 10px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.sidebar-active-dot { display: none; width: 5px; height: 5px; flex-shrink: 0; border-radius: 50%; background: var(--accent); }
+.sidebar-link.is-active .sidebar-active-dot { display: block; }
+/* 搜索框由整体容器显示焦点边框，避免输入框和清空按钮出现互相割裂的视觉状态。 */
+.sidebar-search { display: flex; min-height: 42px; align-items: center; gap: 8px; margin-top: 13px; padding: 0 11px; border: 1px solid var(--border); border-radius: 10px; color: var(--text-subtle); background: var(--well); }
+.sidebar-search:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sidebar-search > .workbench-icon { width: 16px; height: 16px; }
+.sidebar-search input[type="search"] { width: 100%; min-width: 0; height: 42px; padding: 0; border: 0; border-radius: 0; outline: 0; color: var(--text); background: transparent; box-shadow: none; font-size: 12px; }
+.sidebar-search input::placeholder { color: var(--text-subtle); }
+.sidebar-search input::-webkit-search-cancel-button { display: none; }
+.sidebar-search button { display: grid; width: 28px; min-width: 28px; height: 38px; padding: 0; place-items: center; border: 0; color: var(--text-muted); background: transparent; }
+/* min-height:0 允许弹性子项收缩并独立滚动，工具较多时仍能看到品牌、搜索和底部操作。 */
+.sidebar-navigation { min-height: 0; flex: 1; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; padding: 0 14px 16px; scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+.sidebar-group + .sidebar-group { margin-top: 18px; }
+.sidebar-group-heading { display: flex; align-items: center; justify-content: space-between; min-height: 34px; margin: 0 12px 6px; color: var(--text-subtle); font-size: 10px; font-weight: 500; letter-spacing: .05em; }
+.sidebar-group-heading > span:last-child { font-size: 10px; font-variant-numeric: tabular-nums; }
+.sidebar-footer { flex-shrink: 0; padding: 13px 14px; border-top: 1px solid var(--border); }
+.sidebar-collapse-button { display: flex; width: 100%; min-height: 44px; align-items: center; gap: 11px; padding: 9px 12px; border: 0; border-radius: 10px; color: var(--text-muted); background: transparent; font-size: 12px; text-align: left; }
+.sidebar-collapse-button:hover { color: var(--accent); background: var(--accent-soft); }
+.sidebar-collapse-button kbd { display: grid; width: 20px; height: 22px; margin-left: auto; place-items: center; border: 1px solid var(--border); border-radius: 5px; color: var(--text-subtle); font: inherit; }
+/* 加载、错误和空结果共用状态区；错误时保持重试入口可操作，不依赖页面整体刷新。 */
+.sidebar-status { display: flex; flex-direction: column; gap: 12px; padding: 16px 10px; color: var(--text-muted); font-size: 12px; }
+.sidebar-status button { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--border); border-radius: 9px; color: var(--accent); background: var(--surface); }
+.sidebar-skeleton { display: block; height: 36px; border-radius: 9px; background: var(--surface-soft); }
+/*
+ * 桌面收起态只隐藏说明性文字，链接本身、图标和键盘焦点仍然保留。
+ * 图标链接的完整名称由组件的 aria-label 与 title 提供；分组标题转为细分隔线。
+ */
+.sidebar-content.is-collapsed .sidebar-brand { justify-content: center; padding-inline: 0; }
+.sidebar-content.is-collapsed .brand-wordmark, .sidebar-content.is-collapsed .sidebar-link-label, .sidebar-content.is-collapsed .sidebar-tool-count, .sidebar-content.is-collapsed .sidebar-search, .sidebar-content.is-collapsed .sidebar-active-dot, .sidebar-content.is-collapsed .sidebar-group-heading > span, .sidebar-content.is-collapsed .sidebar-collapse-button > span, .sidebar-content.is-collapsed .sidebar-collapse-button kbd { display: none; }
+.sidebar-content.is-collapsed .sidebar-link, .sidebar-content.is-collapsed .sidebar-collapse-button { justify-content: center; padding-inline: 0; }
+.sidebar-content.is-collapsed .sidebar-group-heading { min-height: 0; height: 1px; margin: 8px 8px 12px; background: var(--border); }
+.sidebar-content.is-collapsed .sidebar-group + .sidebar-group { margin-top: 12px; }
+.sidebar-content.is-collapsed .sidebar-status { padding-inline: 0; font-size: 10px; overflow-wrap: anywhere; text-align: center; }
+.sidebar-content.is-collapsed .sidebar-status button { width: 44px; padding: 0; }
+.sidebar-content.is-collapsed .sidebar-status button > span { display: none; }
+
+/* 侧栏主题将原有悬浮标题栏改为顶部工作区标题，并为固定侧栏让出横向空间。 */
+.workbench-layout[data-menu-theme="sidebar"] .app-header { top: 0; width: calc(100% - var(--sidebar-width)); margin: 0 0 0 var(--sidebar-width); }
+.workbench-layout[data-menu-theme="sidebar"] .header-inner { min-height: 89px; padding: 16px 32px; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: var(--surface); box-shadow: none; }
+.workbench-layout[data-menu-theme="sidebar"] .app-shell, .workbench-layout[data-menu-theme="sidebar"] .app-footer { width: calc(100% - var(--sidebar-width)); margin-left: var(--sidebar-width); padding-inline: clamp(24px, 3vw, 48px); }
+.workbench-layout[data-menu-theme="sidebar"] .app-shell { min-height: calc(100vh - 172px); padding-top: 30px; padding-bottom: 48px; }
+.workbench-layout[data-menu-theme="sidebar"] .app-footer { margin-top: 0; }
+.workbench-layout[data-menu-theme="sidebar"] .tool-breadcrumb { margin-bottom: 22px; }
+.workspace-heading { display: flex; min-width: 0; align-items: center; gap: 12px; }
+.workspace-heading > div { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+.workspace-label { color: var(--text-subtle); font-size: 9px; font-weight: 500; letter-spacing: .15em; }
+.workspace-heading strong { overflow: hidden; color: var(--text); font-size: 16px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.workspace-page-icon { display: grid; width: 39px; height: 39px; flex-shrink: 0; place-items: center; border: 1px solid var(--border); border-radius: 11px; color: var(--accent); background: var(--accent-soft); }
+.mobile-menu-button { display: none; width: 44px; height: 44px; flex-shrink: 0; place-items: center; padding: 0; border: 1px solid var(--border); border-radius: 12px; color: var(--text); background: transparent; }
+/* 侧栏已经提供常驻入口，首页改用紧凑介绍并隐藏装饰快捷卡片，让更多工具出现在首屏。 */
+.workbench-layout[data-menu-theme="sidebar"] .home-hero { min-height: 0; padding-top: 10px; padding-bottom: 10px; grid-template-columns: 1fr; }
+.workbench-layout[data-menu-theme="sidebar"] .home-hero h1 { margin-bottom: 14px; font-size: clamp(30px, 3vw, 42px); }
+.workbench-layout[data-menu-theme="sidebar"] .home-hero h1 br { display: none; }
+.workbench-layout[data-menu-theme="sidebar"] .hero-label { margin-bottom: 16px; }
+.workbench-layout[data-menu-theme="sidebar"] .hero-launchpad { display: none; }
+.workbench-layout[data-menu-theme="sidebar"] .hero-meta { margin-top: 18px; }
+.workbench-layout[data-menu-theme="sidebar"] .home-tools { padding-top: 30px; }
+.workbench-layout[data-menu-theme="sidebar"] .home-section-heading { flex-wrap: wrap; }
+.workbench-layout[data-menu-theme="sidebar"] .home-section-heading h2 { font-size: 21px; }
+.workbench-layout[data-menu-theme="sidebar"] .tool-search { width: min(100%, 300px); }
+.workbench-layout[data-menu-theme="sidebar"] .category-filters button { padding-inline: 12px; }
+.workbench-layout[data-menu-theme="sidebar"] .tool-collection-toolbar { flex-wrap: wrap; }
+.workbench-layout[data-menu-theme="sidebar"] .tool-card { min-height: 190px; border-radius: 19px; }
+/* 抽屉通过组件库挂载在页面根容器之外，使用独立根类同步标题、关闭按钮与内容配色。 */
+.workbench-mobile-drawer .ant-drawer-header { border-color: var(--border); background: var(--surface-raised); }
+.workbench-mobile-drawer .ant-drawer-title, .workbench-mobile-drawer .ant-drawer-close { color: var(--text); }
+.workbench-mobile-drawer .ant-drawer-body { background: var(--surface-raised); }
+.workbench-mobile-drawer .sidebar-overview { padding-top: 16px; }
+
+/* 中等桌面宽度扣除侧栏后空间有限，将卡片改为两列，并精简标题栏的辅助文字。 */
+@media (min-width: 901px) and (max-width: 1200px) {
+    .workbench-layout[data-menu-theme="sidebar"] .tool-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .workbench-layout[data-menu-theme="sidebar"] .identity-grid { grid-template-columns: 1fr; }
+    .workbench-layout[data-menu-theme="sidebar"] .header-inner { padding-inline: 24px; }
+    .workbench-layout[data-menu-theme="sidebar"] .data-menu-button > span { display: none; }
+    .workbench-layout[data-menu-theme="sidebar"] .header-inner .data-menu-button { width: 44px; padding: 0; }
+    .workbench-layout[data-menu-theme="sidebar"] .data-menu-button .workbench-icon:last-child { display: none; }
+    .workbench-layout[data-menu-theme="sidebar"] .workspace-label { display: none; }
+}
+/*
+ * 900px 及以下使用手机 / 平板抽屉：隐藏固定侧栏并取消内容偏移。
+ * 此处不修改持久化的桌面收起状态，回到桌面宽度时仍可恢复用户之前的布局。
+ */
+@media (max-width: 900px) {
+    .workbench-sidebar { display: none; }
+    .mobile-menu-button { display: grid; }
+    .workspace-page-icon { display: none; }
+    .workbench-layout[data-menu-theme="sidebar"] .app-header { width: 100%; margin-left: 0; }
+    .workbench-layout[data-menu-theme="sidebar"] .header-inner { min-height: 76px; padding: 12px 20px; gap: 12px; }
+    .workbench-layout[data-menu-theme="sidebar"] .app-shell, .workbench-layout[data-menu-theme="sidebar"] .app-footer { width: 100%; margin-left: 0; padding-inline: 24px; }
+    .workbench-layout[data-menu-theme="sidebar"] .app-shell { min-height: calc(100vh - 160px); }
+    .workbench-layout[data-menu-theme="sidebar"] .workspace-label { display: none; }
+    .menu-theme-button { width: 44px; padding: 0; border-radius: 50%; }
+    .menu-theme-button > span, .menu-theme-button > .workbench-icon:last-child { display: none; }
+    .workbench-mobile-drawer .sidebar-search input[type="search"] { font-size: 16px; }
+}
+/* 小屏进一步缩小留白；长工具名称保持单行省略，完整名称仍在页面标题与导航中可见。 */
+@media (max-width: 600px) {
+    .workbench-layout[data-menu-theme="sidebar"] .header-inner { padding-inline: 12px; gap: 8px; }
+    .workspace-heading { gap: 8px; flex: 1; }
+    .workspace-heading strong { font-size: 13px; }
+    .workbench-layout[data-menu-theme="sidebar"] .app-shell, .workbench-layout[data-menu-theme="sidebar"] .app-footer { padding-inline: 18px; }
+    .workbench-layout[data-menu-theme="sidebar"] .home-hero h1 { font-size: 30px; }
+    .workbench-layout[data-menu-theme="sidebar"] .tool-search { width: 100%; }
+    .menu-theme-popover .ant-popover-inner { padding: 16px; }
+    .menu-theme-option { gap: 6px; padding: 8px; }
+    .menu-theme-option-title { font-size: 11px; }
+    .menu-theme-option-description { font-size: 9px; }
+}
+/* 不支持背景模糊时使用现有表面色降级，保留基础层级和文字可读性。 */
+@supports not (backdrop-filter: blur(1px)) {
+    .workbench-sidebar { background: var(--surface-raised); }
+}
+/* 极窄屏只保留品牌图标，为菜单主题、数据管理和外观按钮预留操作空间。 */
+@media (max-width: 380px) {
+    .workbench-layout[data-menu-theme="app"] .brand-wordmark { display: none; }
+}
+/* 尊重用户减少透明效果的系统偏好；减少动态效果的统一规则由 glass.css 提供。 */
+@media (prefers-reduced-transparency: reduce) {
+    .workbench-sidebar { -webkit-backdrop-filter: none; backdrop-filter: none; }
+}

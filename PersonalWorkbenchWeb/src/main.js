@@ -1,8 +1,10 @@
 import { createApp } from 'vue';
 import AntDesignVue, { message } from 'ant-design-vue';
 import 'ant-design-vue/dist/reset.css';
+// 按基础工具样式、全局外观、导航布局、工具组件的顺序加载；导航只覆盖与菜单有关的规则。
 import './styles/site.css';
 import './styles/glass.css';
+import './styles/navigation.css';
 import './styles/toolbox.css';
 import App from './App.vue';
 import { router } from './router/index.js';

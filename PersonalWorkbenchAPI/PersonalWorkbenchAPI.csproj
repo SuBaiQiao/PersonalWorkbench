@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- 全国区划嵌入程序集，逻辑名需与服务中的资源读取名称一致，避免依赖部署目录。 -->
+    <EmbeddedResource Include="Data\china-areas.json" LogicalName="PersonalWorkbench.Data.china-areas.json" />
+    <!-- 发布数据时同时保留上游 MIT 许可声明。 -->
+    <None Update="Data\china-areas.LICENSE" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Always" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.32" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.32" />
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.3.1" />
@@ -16,12 +20,12 @@
     <PackageReference Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.2.8" />
     <Content Update="Data\tools.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Always" />
     <None Update="devices.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Always" />
-    <!-- Runtime collaboration data must not be included in deployment packages. -->
+    <!-- 协作编辑产生的运行时数据不得被收集到发布包中。 -->
     <Content Remove="Data/collaborative-editor/**" />
     <None Remove="Data/collaborative-editor/**" />
   </ItemGroup>
 
-  <!-- Build before collecting publish files so a clean checkout publishes the UI too. -->
+  <!-- 在收集发布文件前构建前端，确保从全新检出的源码发布时也能包含完整页面。 -->
   <Target Name="BuildWebForPublish" BeforeTargets="ComputeFilesToPublish" Condition="'$(DesignTimeBuild)' != 'true'">
     <Exec WorkingDirectory="$(WebProjectDirectory)" Command="pnpm install --frozen-lockfile" Condition="Exists('$(WebProjectDirectory)pnpm-lock.yaml')" />
     <Exec WorkingDirectory="$(WebProjectDirectory)" Command="npm ci --no-audit --no-fund" Condition="!Exists('$(WebProjectDirectory)pnpm-lock.yaml') And Exists('$(WebProjectDirectory)package-lock.json')" />

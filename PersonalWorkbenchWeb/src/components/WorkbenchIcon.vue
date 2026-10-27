@@ -1,8 +1,13 @@
 <script setup>
 import { computed } from 'vue';
 const props = defineProps({ name: { type: String, default: 'grid' } });
+// 所有图标共用 viewBox 与描边样式；菜单相关图标也放在同一字典中，保持视觉一致。
 const paths = {
     grid: 'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',
+    sidebar: 'M3 3h18v18H3z M9 3v18 M5.5 7h1 M5.5 11h1 M12 7h6 M12 11h6 M12 15h4',
+    menu: 'M4 6h16 M4 12h16 M4 18h16',
+    collapse: 'M4 3v18 M20 6l-6 6 6 6 M14 12H8',
+    expand: 'M4 3v18 M10 6l6 6-6 6 M8 12h12',
     search: 'M20.5 20.5 16 16 M18 10.5a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0',
     arrow: 'M6 18 18 6 M6 6h12v12',
     back: 'm10 5-7 7 7 7 M3 12h18',
@@ -34,6 +39,7 @@ const paths = {
     check: 'm5 12 4 4L19 6',
     close: 'm6 6 12 12 M6 18 18 6'
 };
+// 未知图标名回退到工具网格，避免后端新增目录项时导航出现空白图标。
 const path = computed(() => paths[props.name] || paths.grid);
 </script>
 

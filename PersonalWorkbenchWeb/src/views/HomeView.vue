@@ -1,16 +1,15 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
-import { api, getErrorMessage } from '../api/client.js';
+import { computed, ref } from 'vue';
 import WorkbenchIcon from '../components/WorkbenchIcon.vue';
-import { getToolPresentation, toolCategories } from '../utils/toolPresentation.js';
+import { useToolCatalog } from '../composables/useToolCatalog.js';
+import { toolCategories } from '../utils/toolPresentation.js';
 
-const tools = ref([]);
-const loading = ref(true);
-const errorMessage = ref('');
+// 目录数据与侧栏共用缓存；首页的搜索词和分类只保存在当前页面，不影响侧栏搜索。
+const { tools, presentedTools, loading, errorMessage, loadTools } = useToolCatalog();
 const search = ref('');
 const activeCategory = ref('all');
 
-const presentedTools = computed(() => tools.value.map(tool => ({ ...tool, ...getToolPresentation(tool.route) })));
+// 分类与关键词采用交集筛选，搜索简介及别名可覆盖用户习惯的功能叫法。
 const filteredTools = computed(() => {
     const query = search.value.trim().toLocaleLowerCase();
     return presentedTools.value.filter(tool =>
@@ -18,22 +17,11 @@ const filteredTools = computed(() => {
         && (!query || `${tool.name} ${tool.description} ${tool.keywords}`.toLocaleLowerCase().includes(query))
     );
 });
+// 始终保留“全部工具”，其余分类只在后端目录确实包含对应工具时显示。
 const categories = computed(() => toolCategories.filter(category => category.id === 'all' || presentedTools.value.some(tool => tool.category === category.id)));
 
+/** 清空首页的两个筛选条件，供无搜索结果时恢复完整目录。 */
 function resetFilters() { search.value = ''; activeCategory.value = 'all'; }
-async function loadTools() {
-    loading.value = true;
-    errorMessage.value = '';
-    try {
-        const response = await api.get('/api/tools');
-        tools.value = response.data;
-    } catch (error) {
-        errorMessage.value = await getErrorMessage(error, '工具目录加载失败。');
-    } finally {
-        loading.value = false;
-    }
-}
-onMounted(loadTools);
 </script>
 
 <template>
