@@ -3,7 +3,7 @@
  * 布局由容器的 data-menu-theme 决定，配色由根节点的 data-theme 决定，两者可自由组合。
  * 本文件在 glass.css 之后加载，仅覆盖导航和侧栏布局，工具内部的功能样式继续沿用原实现。
  */
-.workbench-layout { min-height: 100vh; }
+.workbench-layout { --toolbar-expanded-height: 78px; --sticky-header-top: 20px; min-height: 100vh; }
 
 /* 主题入口与弹层：使用实色背景遮住后方内容，保证预览选项不会与首页文字重叠。 */
 .menu-theme-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 13px; border: 1px solid var(--border); border-radius: 15px; color: var(--text-muted); background: transparent; font-size: 13px; font-weight: 500; transition: background 180ms, color 180ms; }
@@ -38,7 +38,7 @@
 .preview-sidebar > .preview-sidebar i:first-child { background: var(--accent); }
 
 /* 桌面侧栏宽度统一由变量控制，标题栏、主内容与页脚使用同一变量预留空间。 */
-.workbench-layout[data-menu-theme="sidebar"] { --sidebar-width: 264px; }
+.workbench-layout[data-menu-theme="sidebar"] { --sidebar-width: 264px; --toolbar-expanded-height: 89px; --sticky-header-top: 0px; --workspace-inset: clamp(24px, 3vw, 48px); }
 .workbench-layout[data-menu-theme="sidebar"].sidebar-collapsed { --sidebar-width: 80px; }
 .workbench-sidebar { position: fixed; inset: 0 auto 0 0; z-index: 110; width: var(--sidebar-width); border-right: 1px solid var(--border); background: var(--surface-raised); -webkit-backdrop-filter: blur(28px); backdrop-filter: blur(28px); }
 .sidebar-content { display: flex; height: 100%; min-height: 0; flex-direction: column; color: var(--text); }
@@ -93,7 +93,7 @@
 .sidebar-content.is-collapsed .sidebar-status button > span { display: none; }
 
 /* 侧栏主题将原有悬浮标题栏改为顶部工作区标题，并为固定侧栏让出横向空间。 */
-.workbench-layout[data-menu-theme="sidebar"] .app-header { top: 0; width: calc(100% - var(--sidebar-width)); margin: 0 0 0 var(--sidebar-width); }
+.workbench-layout[data-menu-theme="sidebar"] .app-header { top: var(--sticky-header-top); width: calc(100% - var(--sidebar-width)); margin: 0 0 0 var(--sidebar-width); }
 .workbench-layout[data-menu-theme="sidebar"] .header-inner { min-height: 89px; padding: 16px 32px; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; background: var(--surface); box-shadow: none; }
 .workbench-layout[data-menu-theme="sidebar"] .app-shell, .workbench-layout[data-menu-theme="sidebar"] .app-footer { width: calc(100% - var(--sidebar-width)); margin-left: var(--sidebar-width); padding-inline: clamp(24px, 3vw, 48px); }
 .workbench-layout[data-menu-theme="sidebar"] .app-shell { min-height: calc(100vh - 172px); padding-top: 30px; padding-bottom: 48px; }
@@ -140,6 +140,7 @@
  * 此处不修改持久化的桌面收起状态，回到桌面宽度时仍可恢复用户之前的布局。
  */
 @media (max-width: 900px) {
+    .workbench-layout[data-menu-theme="sidebar"] { --toolbar-expanded-height: 76px; --workspace-inset: 24px; }
     .workbench-sidebar { display: none; }
     .mobile-menu-button { display: grid; }
     .workspace-page-icon { display: none; }
@@ -154,6 +155,7 @@
 }
 /* 小屏进一步缩小留白；长工具名称保持单行省略，完整名称仍在页面标题与导航中可见。 */
 @media (max-width: 600px) {
+    .workbench-layout[data-menu-theme="sidebar"] { --workspace-inset: 18px; }
     .workbench-layout[data-menu-theme="sidebar"] .header-inner { padding-inline: 12px; gap: 8px; }
     .workspace-heading { gap: 8px; flex: 1; }
     .workspace-heading strong { font-size: 13px; }
@@ -176,4 +178,37 @@
 /* 尊重用户减少透明效果的系统偏好；减少动态效果的统一规则由 glass.css 提供。 */
 @media (prefers-reduced-transparency: reduce) {
     .workbench-sidebar { -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+/*
+ * 导航和面包屑整体吸附在页面顶部。
+ * 外层始终保留展开时的高度，内部控件收紧后不会改变正文的文档位置，避免滚动跳动。
+ * 空出的透明区域不拦截鼠标，只有实际导航和面包屑接收点击。
+ */
+.workbench-layout .app-header { top: var(--sticky-header-top); min-height: var(--toolbar-expanded-height); isolation: isolate; pointer-events: none; transition: top 180ms var(--ease); }
+.workbench-layout.has-breadcrumb .app-header { min-height: calc(var(--toolbar-expanded-height) + 56px); }
+.workbench-layout .header-inner { pointer-events: auto; }
+.workbench-layout .app-header .tool-breadcrumb { width: min(1180px, calc(100% - 16px)); min-height: 44px; flex-wrap: nowrap; gap: 10px; margin: 12px auto 0; padding: 0 14px; border: 1px solid var(--glass-border); border-radius: 14px; background: var(--surface-raised); box-shadow: var(--shadow-soft); -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); pointer-events: auto; }
+.workbench-layout .app-header .tool-breadcrumb a { flex-shrink: 0; }
+.workbench-layout .app-header .tool-breadcrumb [aria-current] { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.workbench-layout[data-menu-theme="sidebar"] .app-header .tool-breadcrumb { width: calc(100% - var(--workspace-inset) * 2); }
+
+/* 紧凑态保留完整控件和至少 44px 的面包屑行，仅收紧顶部空隙与导航内边距。 */
+.workbench-layout.is-scrolled { --sticky-header-top: 8px; }
+.workbench-layout[data-menu-theme="sidebar"].is-scrolled { --sticky-header-top: 0px; }
+.workbench-layout.is-scrolled .header-inner { min-height: 64px; padding-block: 8px; }
+.workbench-layout.is-scrolled .app-header .tool-breadcrumb { margin-top: 6px; }
+/* 只遮住收紧后实际可见的顶部区域，避免正文文字从顶部边缘和两行导航的缝隙中穿过。 */
+.workbench-layout.is-scrolled .app-header::before { position: absolute; z-index: -1; top: calc(-1 * var(--sticky-header-top)); right: 0; left: 0; height: calc(64px + var(--sticky-header-top)); background: var(--bg); content: ''; }
+.workbench-layout.has-breadcrumb.is-scrolled .app-header::before { height: calc(114px + var(--sticky-header-top)); }
+
+@media (max-width: 800px) {
+    .workbench-layout[data-menu-theme="app"] { --toolbar-expanded-height: 70px; --sticky-header-top: 12px; }
+    .workbench-layout[data-menu-theme="app"].is-scrolled { --sticky-header-top: 6px; }
+}
+@media (max-width: 600px) {
+    .workbench-layout[data-menu-theme="app"] .app-header .tool-breadcrumb { width: calc(100% - 12px); }
+}
+@media (prefers-reduced-transparency: reduce) {
+    .workbench-layout .app-header .tool-breadcrumb { -webkit-backdrop-filter: none; backdrop-filter: none; }
 }

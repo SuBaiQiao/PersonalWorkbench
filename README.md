@@ -20,6 +20,7 @@ PersonalWorkbench 是一个个人工具箱，使用 Vue 3 + Vite 构建前端，
 - 数据转代码：JSON 转 C# 实体 / TypeScript 类型，支持嵌套对象、数组样本合并、缺失字段和空值。
 - HTTP 请求工具：编辑方法、请求头与原始请求体，查看响应和耗时，支持常用 cURL 命令导入/导出、取消和超时。请求从浏览器直接发出，受 CORS、HTTPS 和浏览器请求头限制，不携带浏览器 Cookie；响应读取上限 2 MB。
 - 图片工具箱：浏览器本地裁剪、等比缩放、PNG/JPEG/WebP 转换与质量设置、主要颜色提取和下载；限制 20 MB / 4000 万像素，动图导出为静态图。
+- 视频播放器：本地常见视频、完整 m3u8 文件夹、网络 HLS / FLV / TS，支持倍速、快进后退、截图及全屏；通过 FFmpeg 兼容播放 MKV / AVI / WMV 等编码，并接入 RTSP / RTMP 视频源。详见[视频播放器说明](docs/video-player.md)。
 - Android 集群设备监控：读取 `devices.txt`，通过 ADB 抓取设备屏幕并使用 WebSocket 实时推送到监控大屏。
 - 端口占用检查：检查本机 TCP/UDP 端口，并显示占用它的进程名称、PID 和监听状态。
 - 协同文本编辑器：通过 WebSocket 在多个浏览器之间同步文本，保留历史版本，并提供临时文件上传、下载、删除和粘贴图片上传。
@@ -42,6 +43,7 @@ PersonalWorkbench 是一个个人工具箱，使用 Vue 3 + Vite 构建前端，
 
 - .NET 8 SDK
 - Node.js 20.19+ 或 22.12+（建议使用当前 LTS 版本），以及 pnpm 11
+- FFmpeg（可选）：视频播放器的服务端兼容播放与 RTSP / RTMP 转流需要可执行的 FFmpeg，包含 `libx264` 和 AAC 编码器；浏览器直接播放不需要它。
 
 ### 启动项目
 

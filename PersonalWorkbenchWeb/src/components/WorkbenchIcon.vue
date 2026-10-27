@@ -3,6 +3,7 @@ import { computed } from 'vue';
 const props = defineProps({ name: { type: String, default: 'grid' } });
 // 所有图标共用 viewBox 与描边样式；菜单相关图标也放在同一字典中，保持视觉一致。
 const paths = {
+    video: 'M3 4h18v16H3z m7 4 6 4-6 4Z',
     grid: 'M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z',
     sidebar: 'M3 3h18v18H3z M9 3v18 M5.5 7h1 M5.5 11h1 M12 7h6 M12 11h6 M12 15h4',
     menu: 'M4 6h16 M4 12h16 M4 18h16',

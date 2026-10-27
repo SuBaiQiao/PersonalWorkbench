@@ -19,10 +19,12 @@
     "cron-parser": "5.10.2",
     "cronstrue": "3.37.0",
     "diff": "9.0.0",
+    "hls.js": "1.7.3",
     "jsbarcode": "3.12.3",
     "jsonc-parser": "3.3.1",
     "jsonpath-plus": "11.2.1",
     "luxon": "3.7.2",
+    "mpegts.js": "1.8.2",
     "qrcode": "1.5.4",
     "vue": "3.5.43",
     "vue-router": "^4.5.0"

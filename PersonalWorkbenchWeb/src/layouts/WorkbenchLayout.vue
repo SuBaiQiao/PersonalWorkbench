@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { Modal, message } from 'ant-design-vue';
 import { api, getErrorMessage } from '../api/client.js';
@@ -23,6 +23,27 @@ const mobileMenuTrigger = ref(null);
 // 记录打开菜单时的路由，用于区分“关闭菜单”与“通过菜单进入另一工具”的焦点去向。
 let mobileMenuOrigin = route.path;
 const pageIcon = computed(() => isHome.value ? 'grid' : getToolPresentation(route.path).icon);
+
+// 顶部紧凑态仅随当前滚动位置变化，不保存到主题偏好中。
+const isHeaderCompact = ref(false);
+
+/**
+ * 滚动后收紧顶部区域，接近页顶时恢复正常留白。
+ * 使用不同的进入 / 退出阈值，避免滚动停在边界附近时反复切换、产生视觉抖动。
+ * 监听器只读取滚动位置并更新布尔状态，不在每次滚动时测量布局。
+ */
+function updateHeaderCompact() {
+    const scrollTop = Math.max(0, window.scrollY);
+    if (scrollTop > 48) isHeaderCompact.value = true;
+    else if (scrollTop <= 16) isHeaderCompact.value = false;
+}
+
+onMounted(() => {
+    // 兼容浏览器恢复滚动位置后直接进入页面的情况。
+    updateHeaderCompact();
+    window.addEventListener('scroll', updateHeaderCompact, { passive: true });
+});
+onBeforeUnmount(() => window.removeEventListener('scroll', updateHeaderCompact));
 
 /** 打开手机菜单，并记录本次打开来源，供关闭动画结束后恢复键盘焦点。 */
 function openMobileMenu() {
@@ -111,7 +132,7 @@ function importDatabase(event) {
 
 <template>
     <!-- 主题仅改变导航和容器样式，主内容插槽始终挂在同一位置，保留工具组件的编辑状态。 -->
-    <div class="workbench-layout" :data-menu-theme="menuTheme" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
+    <div class="workbench-layout" :data-menu-theme="menuTheme" :class="{ 'sidebar-collapsed': sidebarCollapsed, 'has-breadcrumb': !isHome, 'is-scrolled': isHeaderCompact }">
     <a class="skip-link" href="#main-content">跳至主要内容</a>
     <!-- 桌面固定侧栏与手机抽屉共享内容组件，通过 CSS 断点决定可见的导航入口。 -->
     <aside v-if="isSidebar" class="workbench-sidebar" aria-label="左侧工具菜单"><WorkbenchSidebar :collapsed="sidebarCollapsed" @toggle-collapse="sidebarCollapsed = !sidebarCollapsed" /></aside>
@@ -150,10 +171,11 @@ function importDatabase(event) {
                 <button class="appearance-button" type="button" :aria-label="isDark ? '切换到浅色外观' : '切换到深色外观'" :title="isDark ? '切换到浅色外观' : '切换到深色外观'" @click="toggleAppearance"><WorkbenchIcon :name="isDark ? 'moon' : 'sun'" /></button>
             </div>
         </div>
+        <!-- 面包屑与导航共用吸附容器，避免分别计算定位高度后互相遮挡。 -->
+        <nav v-if="!isHome" class="tool-breadcrumb" aria-label="当前位置"><RouterLink to="/"><WorkbenchIcon name="back" />所有工具</RouterLink><span aria-hidden="true">/</span><span aria-current="page" :title="route.meta.title">{{ route.meta.title }}</span></nav>
     </header>
     <!-- tabindex=-1 允许程序聚焦和“跳至主要内容”定位，不额外占用正常的 Tab 顺序。 -->
     <main id="main-content" ref="mainContent" class="app-shell" :class="{ 'is-home': isHome }" tabindex="-1">
-        <nav v-if="!isHome" class="tool-breadcrumb" aria-label="当前位置"><RouterLink to="/"><WorkbenchIcon name="back" />所有工具</RouterLink><span aria-hidden="true">/</span><span aria-current="page">{{ route.meta.title }}</span></nav>
         <slot />
     </main>
     <footer class="app-footer">

@@ -7,6 +7,7 @@ export const toolCategories = [
 ];
 
 const presentations = {
+    '/tools/video-player': { category: 'files', icon: 'video', tone: 'teal', description: '本地影像、HLS 与直播流，在一个播放器里打开。', keywords: '视频 播放器 video mp4 webm mkv avi m3u8 hls flv rtsp rtmp ts' },
     '/tools/json-toolbox': { category: 'develop', icon: 'braces', tone: 'amber', description: '格式化与查询，让复杂 JSON 清晰可读。', keywords: 'json jsonpath 格式化 压缩 树 校验' },
     '/tools/text-diff': { category: 'develop', icon: 'diff', tone: 'rose', description: '并排查看文本，快速找到增加与删除。', keywords: 'diff 文本 对比 差异 比较' },
     '/tools/regex-tester': { category: 'develop', icon: 'regex', tone: 'indigo', description: '实时匹配、分组与替换，验证每一条规则。', keywords: 'regex regexp 正则 表达式 匹配 替换' },

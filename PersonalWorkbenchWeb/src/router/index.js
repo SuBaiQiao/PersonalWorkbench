@@ -5,6 +5,7 @@ export const router = createRouter({
     scrollBehavior: () => ({ top: 0 }),
     routes: [
         { path: '/', component: () => import('../views/HomeView.vue'), meta: { title: '工具台' } },
+        { path: '/tools/video-player', component: () => import('../views/tools/VideoPlayerView.vue'), meta: { title: '视频播放器' } },
         { path: '/tools/identity-generator', component: () => import('../views/tools/IdentityGeneratorView.vue'), meta: { title: '身份信息生成器' } },
         { path: '/tools/sql-converter', component: () => import('../views/tools/SqlConverterView.vue'), meta: { title: 'SQL 驼峰转换器' } },
         { path: '/tools/amount-uppercase', component: () => import('../views/tools/AmountUppercaseView.vue'), meta: { title: '人民币大写转换器' } },
