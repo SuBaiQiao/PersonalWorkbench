@@ -29,6 +29,8 @@
     <None Update="Scripts\TempCleanup.ps1" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="Always" />
     <!-- 协作编辑产生的运行时数据不得被收集到发布包中。 -->
     <Content Remove="Data/collaborative-editor/**" />
+    <Content Remove="Data/database-audit.db*" />
+    <None Remove="Data/database-audit.db*" />
     <None Remove="Data/collaborative-editor/**" />
   </ItemGroup>
 

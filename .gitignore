@@ -489,6 +489,7 @@ FodyWeavers.xsd
 /PersonalWorkbenchAPI/Data/collaborative-editor/uploads/*
 !/PersonalWorkbenchAPI/Data/collaborative-editor/uploads/.gitkeep
 /PersonalWorkbenchAPI/Data/personal-workbench.db*
+/PersonalWorkbenchAPI/Data/database-audit.db*
 
 # Frontend build output and local configuration
 /PersonalWorkbenchWeb/dist/

@@ -28,6 +28,9 @@ builder.Services.AddSingleton<SystemStatusService>();
 builder.Services.AddSingleton<CollaborativeEditorService>();
 builder.Services.AddScoped<DeltaCardService>();
 builder.Services.AddScoped<DatabaseTransferService>();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton<DatabaseAuditService>();
+builder.Services.AddScoped<DatabaseManagementService>();
 builder.Services.AddSingleton<CryptoService>();
 builder.Services.AddHostedService(serviceProvider => serviceProvider.GetRequiredService<AndroidMonitorService>());
 

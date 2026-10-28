@@ -212,6 +212,7 @@ function importDatabase(event) {
                         <template #overlay>
                             <a-menu class="data-menu" aria-label="数据管理菜单">
                                 <a-menu-item key="menus"><RouterLink to="/settings/menus"><WorkbenchIcon name="menu" /> 菜单管理</RouterLink></a-menu-item>
+                                <a-menu-item key="database"><RouterLink to="/settings/database"><WorkbenchIcon name="database" /> 数据库管理</RouterLink></a-menu-item>
                                 <a-menu-item key="export" @click="exportDatabase"><WorkbenchIcon name="download" /> 导出数据库</a-menu-item>
                                 <a-menu-item key="import" @click="selectImportFile"><WorkbenchIcon name="upload" /> 导入备份</a-menu-item>
                             </a-menu>

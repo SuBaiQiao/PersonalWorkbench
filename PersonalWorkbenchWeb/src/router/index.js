@@ -14,6 +14,7 @@ export const router = createRouter({
         { path: '/', name: 'home', component: () => import('../views/HomeView.vue'), meta: { title: '工具台' } },
         // 固定维护入口使空菜单、全部禁用时仍然可以管理菜单。
         { path: '/settings/menus', name: 'menu-settings', component: () => import('../views/MenuSettingsView.vue'), meta: { title: '菜单管理', icon: 'menu' } },
+        { path: '/settings/database', name: 'database-settings', component: () => import('../views/DatabaseSettingsView.vue'), meta: { title: '数据库管理', icon: 'database' } },
         { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('../views/NotFoundView.vue'), meta: { title: '页面不存在' } }
     ]
 });

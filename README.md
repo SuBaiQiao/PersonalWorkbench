@@ -209,6 +209,21 @@ PersonalWorkbench/
 
 ### 数据库导出与导入
 
+顶部 **数据管理 → 数据库管理**（`/settings/database`）提供当前 SQLite 库的管理页面：
+
+- 表列表与视图浏览、创建表、修改表名、删除表、清空表。
+- 表结构与建表 SQL，新增、删除、修改字段名称、类型、默认值及约束。创建表和新增/修改字段默认使用选择表单：字段类型下拉，主键、自增、非空和唯一约束开关，普通/唯一索引选择，默认值类型与内容设置；开启自增自动关联 INTEGER 主键，已有主键时禁止给其他字段再次选择主键。复杂约束自动使用高级 SQL 定义并完整保留，例如 `TEXT CHECK(length(value)>0)`，不会静默转换或丢弃。字段新增/修改在事务中重建表，保留其他字段、表级约束、索引、触发器及自增序号，外键或唯一性校验失败则回滚。
+- 索引列表展示索引类型、字段顺序及来源，支持选择一个或多个字段创建普通索引、唯一索引，删除独立索引。字段编辑器内的索引选择只调整独立的非部分单字段索引，保留复合索引、部分索引和约束索引；主键/唯一约束生成的自动索引不可独立删除。复合主键或高级约束通过 SQL 控制台维护。
+- 分页查询、按字段排序、全字段文本搜索，新增、修改和删除数据。区分 NULL、空文本与省略/默认值，支持 Base64 BLOB 和 64 位整数。通过 rowid 或复合主键定位，并校验完整原始行快照，发生并发修改时返回 409。
+- SQL 控制台支持多条语句及多个结果集、重复列名。每次批处理在同一事务内执行，失败整体回滚；每个结果集最多展示 1000 行（超出会提示），执行限时 30 秒。事务由系统管理，不支持脚本中的 `BEGIN` / `COMMIT` / `SAVEPOINT`、`ATTACH` / `DETACH`，以及需要事务外执行的 `VACUUM`。复杂表级约束可以通过 SQL 创建和维护。
+- 操作日志可分页查看，按 SQL、绑定参数、操作类型、错误和状态检索。所有管理连接执行的 SQL（包括查询、表结构检查、PRAGMA、事务、失败语句及控制台完整脚本）均先记录执行意图，再记录完成状态、耗时、影响行数、错误、请求 ID 和来源 IP。多条 SQL 脚本作为一条完整日志留存；同一请求 ID 关联事务内的多条管理语句，最终提交情况查看对应的 `COMMIT` / `ROLLBACK`。`running` 表示结果尚未记录，可能仍在执行或服务曾中断。
+
+日志独立保存在 API 内容目录的 `Data/database-audit.db`，管理连接无法附加其他数据库，删除/清空业务表、导入业务数据库和重启都不会清除日志。审计存储自身的读写不递归记录。该日志文件不包含在业务库导出或发布包中，需要随部署数据单独备份和迁移；默认不自动清理。无法预先写入日志时拒绝执行 SQL。部署运行账户需要能写入该目录。
+
+管理 API 前缀为 `/api/database/manage`：`GET tables/structure/rows/logs`；`POST sql/tables/columns/rows/clear/delete-row/indexes`；`PUT table/column/row`；`DELETE table/column/index`。目标表、字段通过 `table`、`column` 查询参数传入，写入需 JSON 和 `X-Requested-With: XMLHttpRequest`。数据库管理沿用现有工作台访问控制，能访问该 API 的客户端具有当前库的结构和数据管理能力。
+
+验证：根目录执行 `dotnet build tests/DatabaseManagementChecks/DatabaseManagementChecks.csproj -o artifacts/database-management-checks` 后执行 `dotnet artifacts/database-management-checks/DatabaseManagementChecks.dll`；前端目录执行 `npm test` 和 `npm run build`。检查使用独立业务库和审计目录，不修改日常使用的数据库。
+
 数据库功能使用 SQLite，卡牌收集数据默认保存在 `PersonalWorkbenchAPI/Data/personal-workbench.db`。
 
 ```http
