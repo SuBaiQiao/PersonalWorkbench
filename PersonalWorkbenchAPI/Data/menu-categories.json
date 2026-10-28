@@ -1,0 +1,22 @@
+[
+  {
+    "id": "develop",
+    "name": "开发与转换",
+    "order": 10
+  },
+  {
+    "id": "files",
+    "name": "文件与图像",
+    "order": 20
+  },
+  {
+    "id": "system",
+    "name": "设备与监控",
+    "order": 30
+  },
+  {
+    "id": "workspace",
+    "name": "协作与收藏",
+    "order": 40
+  }
+]

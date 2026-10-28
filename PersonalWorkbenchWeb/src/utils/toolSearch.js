@@ -1,33 +1,3 @@
-import { toolCategories } from './toolPresentation.js';
-
-// 功能名称用于搜索和结果说明，必须对应工具实际提供的能力，不把 Base64 或 MD5 描述成加密算法。
-const featuresByRoute = {
-    '/tools/crypto': ['MD5', 'Base64', 'AES', 'RSA', 'SM2', 'SM4', 'URL 编解码'],
-    '/tools/image-base64': ['图片转 Base64', 'Base64 转图片'],
-    '/tools/image-toolbox': ['图片裁剪', '图片缩放', '图片压缩', '格式转换'],
-    '/tools/code-generator': ['二维码', 'Code128', 'EAN 条形码'],
-    '/tools/file-manager': ['目录浏览', '文件预览', '在线编辑', 'UTF-8 / GBK'],
-    '/tools/video-player': ['本地视频', 'M3U8 / HLS', 'FLV', 'RTSP / RTMP'],
-    '/tools/json-toolbox': ['JSON 格式化', 'JSONPath', '树形查看', 'JSON 校验'],
-    '/tools/text-diff': ['文本对比', '差异比较'],
-    '/tools/regex-tester': ['正则匹配', '分组捕获', '正则替换'],
-    '/tools/random-generator': ['UUID / GUID', '随机密码', '随机字符'],
-    '/tools/jwt-decoder': ['JWT 解码', 'Header / Payload', '过期时间'],
-    '/tools/data-to-code': ['JSON 转 C#', 'JSON 转 TypeScript'],
-    '/tools/http-client': ['HTTP 请求', 'cURL 导入', '接口调试'],
-    '/tools/identity-generator': ['测试身份证', '省市县区划', '测试身份数据'],
-    '/tools/sql-converter': ['SQL 命名转换', '驼峰转下划线'],
-    '/tools/amount-uppercase': ['人民币大写', '金额转换'],
-    '/tools/expense-invoice': ['PDF 合并', '发票整理'],
-    '/tools/cron-generator': ['Cron 表达式', '执行时间预览'],
-    '/tools/timestamp': ['Unix 时间戳', '日期转换', '时区转换'],
-    '/tools/android-monitor': ['ADB', 'Android 设备监控'],
-    '/tools/port-checker': ['端口占用', 'TCP / UDP', '关联进程'],
-    '/tools/system-monitor': ['CPU', 'GPU', '内存', '磁盘', '进程监控'],
-    '/tools/collaborative-editor': ['协同编辑', '实时同步', '文件分享'],
-    '/tools/delta-cards': ['卡牌收藏', '收集进度']
-};
-
 /** 关联词采用有方向的扩展：搜“加密”可关联 Base64，搜“MD5”仍优先精确定位 MD5。 */
 const relatedGroups = [
     { aliases: ['加密', '解密', '加密工具', '加密解密', '数据加密', 'crypto', 'cryptography', 'encryption', 'encrypt', 'decrypt'], terms: ['加密', '解密', 'MD5', 'Base64', 'AES', 'RSA', 'SM2', 'SM4'] },
@@ -59,9 +29,9 @@ export function searchTools(tools, query = '') {
     if (normalized && !tokens.length) return [];
     const searches = tokens.map(token => ({ token, related: groups.filter(group => group.aliases.includes(token)).flatMap(group => group.terms) }));
     return tools.map((tool, index) => {
-        const features = tool.features ?? featuresByRoute[tool.route] ?? [];
+        const features = tool.features ?? [];
         const name = compact(tool.name), keywords = compact(tool.keywords), description = compact(tool.description);
-        const category = compact(toolCategories.find(item => item.id === tool.category)?.name);
+        const category = compact(tool.categoryName);
         const featureKeys = features.map(compact);
         const haystack = [name, keywords, description, category, ...featureKeys].join(' ');
         let score = name === compact(query) && normalized ? 100 : 0;

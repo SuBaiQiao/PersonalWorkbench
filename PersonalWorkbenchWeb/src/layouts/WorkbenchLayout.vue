@@ -8,7 +8,7 @@ import WorkbenchSidebar from '../components/WorkbenchSidebar.vue';
 import MenuThemePicker from '../components/MenuThemePicker.vue';
 import ToolSearch from '../components/ToolSearch.vue';
 import { isDark, menuTheme, sidebarCollapsed, toggleAppearance } from '../styles/theme.js';
-import { getToolPresentation } from '../utils/toolPresentation.js';
+import { useToolCatalog } from '../composables/useToolCatalog.js';
 import { downloadBlob } from '../utils/files.js';
 
 // 数据库导入与导出共用忙碌状态，传输期间禁用入口，防止重复提交或互相覆盖。
@@ -21,6 +21,10 @@ const isContentFullscreen = ref(false);
 const fullscreenPending = ref(false);
 let ownsContentFullscreen = false;
 const route = useRoute();
+const { tools } = useToolCatalog();
+const currentMenu = computed(() => tools.value.find(tool => tool.route === route.path));
+const pageTitle = computed(() => currentMenu.value?.name || route.meta.title);
+watch(pageTitle, value => { document.title = value + ' · Personal Workbench'; });
 const isHome = computed(() => route.path === '/');
 const isSidebar = computed(() => menuTheme.value === 'sidebar');
 // 手机抽屉是临时界面状态，不与桌面的收起偏好绑定，也不跨刷新保存。
@@ -28,7 +32,7 @@ const mobileMenuOpen = ref(false);
 const mobileMenuTrigger = ref(null);
 // 记录打开菜单时的路由，用于区分“关闭菜单”与“通过菜单进入另一工具”的焦点去向。
 let mobileMenuOrigin = route.path;
-const pageIcon = computed(() => isHome.value ? 'grid' : getToolPresentation(route.path).icon);
+const pageIcon = computed(() => isHome.value ? 'grid' : currentMenu.value?.icon || route.meta.icon || 'grid');
 
 // 顶部紧凑态仅随当前滚动位置变化，不保存到主题偏好中。
 const isHeaderCompact = ref(false);
@@ -194,7 +198,7 @@ function importDatabase(event) {
             <div v-else class="workspace-heading">
                 <button ref="mobileMenuTrigger" class="mobile-menu-button" type="button" aria-label="打开左侧菜单" :aria-expanded="mobileMenuOpen" @click="openMobileMenu"><WorkbenchIcon name="menu" /></button>
                 <span class="workspace-page-icon"><WorkbenchIcon :name="pageIcon" /></span>
-                <div><span class="workspace-label">PERSONAL WORKSPACE</span><strong>{{ isHome ? '工具总览' : route.meta.title }}</strong></div>
+                <div><span class="workspace-label">PERSONAL WORKSPACE</span><strong>{{ isHome ? '工具总览' : pageTitle }}</strong></div>
             </div>
             <ToolSearch />
             <div class="header-actions">
@@ -207,6 +211,7 @@ function importDatabase(event) {
                         <a-button class="data-menu-button" :loading="transferring" :disabled="transferring" aria-label="数据管理"><WorkbenchIcon name="database" /><span>数据管理</span><WorkbenchIcon name="chevron" /></a-button>
                         <template #overlay>
                             <a-menu class="data-menu" aria-label="数据管理菜单">
+                                <a-menu-item key="menus"><RouterLink to="/settings/menus"><WorkbenchIcon name="menu" /> 菜单管理</RouterLink></a-menu-item>
                                 <a-menu-item key="export" @click="exportDatabase"><WorkbenchIcon name="download" /> 导出数据库</a-menu-item>
                                 <a-menu-item key="import" @click="selectImportFile"><WorkbenchIcon name="upload" /> 导入备份</a-menu-item>
                             </a-menu>
@@ -218,7 +223,7 @@ function importDatabase(event) {
             </div>
         </div>
         <!-- 面包屑与导航共用吸附容器，避免分别计算定位高度后互相遮挡。 -->
-        <nav v-if="!isHome" class="tool-breadcrumb" aria-label="当前位置"><RouterLink to="/"><WorkbenchIcon name="back" />所有工具</RouterLink><span aria-hidden="true">/</span><span aria-current="page" :title="route.meta.title">{{ route.meta.title }}</span></nav>
+        <nav v-if="!isHome" class="tool-breadcrumb" aria-label="当前位置"><RouterLink to="/"><WorkbenchIcon name="back" />所有工具</RouterLink><span aria-hidden="true">/</span><span aria-current="page" :title="pageTitle">{{ pageTitle }}</span></nav>
     </header>
     <!-- tabindex=-1 允许程序聚焦和“跳至主要内容”定位，不额外占用正常的 Tab 顺序。 -->
     <main id="main-content" ref="mainContent" class="app-shell" :class="{ 'is-home': isHome }" tabindex="-1">

@@ -2,12 +2,11 @@
 import { computed, ref, watch } from 'vue';
 import WorkbenchIcon from '../components/WorkbenchIcon.vue';
 import { useToolCatalog } from '../composables/useToolCatalog.js';
-import { toolCategories } from '../utils/toolPresentation.js';
 import { useToolSearch } from '../composables/useToolSearch.js';
 import { searchTools } from '../utils/toolSearch.js';
 
 // 顶部搜索与侧栏共用搜索词及规则，分类仅影响首页卡片。
-const { tools, presentedTools, loading, errorMessage, loadTools } = useToolCatalog();
+const { tools, presentedTools, toolCategories, loading, errorMessage, loadTools } = useToolCatalog();
 const { query: search, clearSearch } = useToolSearch();
 const activeCategory = ref('all');
 
@@ -18,7 +17,8 @@ const filteredTools = computed(() => {
 // 开始新搜索时恢复全部分类，避免上一次分类把相关工具隐藏。
 watch(search, value => { if (value.trim()) activeCategory.value = 'all'; });
 // 始终保留“全部工具”，其余分类只在后端目录确实包含对应工具时显示。
-const categories = computed(() => toolCategories.filter(category => category.id === 'all' || presentedTools.value.some(tool => tool.category === category.id)));
+const categories = computed(() => toolCategories.value.filter(category => category.id === 'all' || presentedTools.value.some(tool => tool.category === category.id)));
+watch(categories, value => { if (!value.some(category => category.id === activeCategory.value)) activeCategory.value = 'all'; });
 
 /** 清空首页的两个筛选条件，供无搜索结果时恢复完整目录。 */
 function resetFilters() { clearSearch(); activeCategory.value = 'all'; }
@@ -35,9 +35,7 @@ function resetFilters() { clearSearch(); activeCategory.value = 'all'; }
         <div class="hero-launchpad" aria-label="常用工具快捷入口">
             <div class="launchpad-orbit" aria-hidden="true"></div><div class="launchpad-orbit orbit-inner" aria-hidden="true"></div>
             <div class="launchpad-caption"><WorkbenchIcon name="sparkles" />A LITTLE MORE POSSIBILITY</div>
-            <RouterLink class="launch-tile tile-qr" to="/tools/code-generator"><span class="launch-icon"><WorkbenchIcon name="qr" /></span><span>一扫，即达<small>二维码与条形码</small></span><WorkbenchIcon name="arrow" /></RouterLink>
-            <RouterLink class="launch-tile tile-crypto" to="/tools/crypto"><span class="launch-icon"><WorkbenchIcon name="lock" /></span><span>转换，自如<small>加密与编解码</small></span><WorkbenchIcon name="arrow" /></RouterLink>
-            <RouterLink class="launch-tile tile-edit" to="/tools/collaborative-editor"><span class="launch-icon"><WorkbenchIcon name="edit" /></span><span>灵感，同步<small>协同文本编辑</small></span><WorkbenchIcon name="arrow" /></RouterLink>
+            <RouterLink v-for="(tool, index) in presentedTools.slice(0, 3)" :key="tool.id" class="launch-tile" :class="['tile-qr', 'tile-crypto', 'tile-edit'][index]" :to="tool.route"><span class="launch-icon"><WorkbenchIcon :name="tool.icon" /></span><span>{{ tool.name }}<small>{{ toolCategories.find(category => category.id === tool.category)?.name }}</small></span><WorkbenchIcon name="arrow" /></RouterLink>
             <span class="launchpad-footnote">简单的工具，流畅的每一天。</span>
         </div>
     </section>

@@ -10,7 +10,7 @@ PersonalWorkbench 是一个个人工具箱，使用 Vue 3 + Vite 构建前端，
 - 报销发票 PDF 合并：支持一次选择多个 PDF，也支持将 PDF 文件拖动到页面中，再通过接口合并并下载。
 - 图片与 Base64 转换器：支持图片转 Base64，以及 Base64 或 Data URL 转图片下载。
 - 二维码与条形码生成器：在浏览器内将内容生成为二维码或 CODE128、EAN-13、CODE39 条形码，支持预览、尺寸设置和 PNG 下载。
-- Cron 工具箱：生成标准五字段表达式，支持中文规则说明、校验、时区选择和未来 5/10/20 次执行时间预览（日期与星期按「或」匹配，不支持 Quartz 扩展）。
+- Cron 工具箱：生成与解析标准五字段 Cron、含秒的六字段 Quartz，支持小时多选、中文规则说明、时区选择和未来 5/10/20 次执行时间预览；六字段支持日期/星期的 `?`，暂不支持 `L`、`W`、`#` 和年份字段。
 - 时间戳工具：秒/毫秒时间戳与日期双向转换、实时当前时间、UTC 与常见时区显示和结果复制；支持负时间戳，校验无效日期和夏令时歧义。
 - JSON 工具箱：格式化、压缩、语法错误定位、按需展开树形结构和 JSONPath 查询；不执行查询脚本或过滤表达式。
 - 文本差异对比：双栏行级差异、增加/删除高亮、忽略空白或大小写、仅查看差异。
@@ -22,6 +22,7 @@ PersonalWorkbench 是一个个人工具箱，使用 Vue 3 + Vite 构建前端，
 - 图片工具箱：浏览器本地裁剪、等比缩放、PNG/JPEG/WebP 转换与质量设置、主要颜色提取和下载；限制 20 MB / 4000 万像素，动图导出为静态图。
 - 视频播放器：本地常见视频、完整 m3u8 文件夹、网络 HLS / FLV / TS，支持倍速、快进后退、截图及全屏；通过 FFmpeg 兼容播放 MKV / AVI / WMV 等编码，并接入 RTSP / RTMP 视频源。详见[视频播放器说明](docs/video-player.md)。
 - 磁盘文件管理：浏览服务器磁盘目录与文件详情，新建文件夹/文件，预览图片、PDF、音视频，在线编辑文本并检查保存冲突。
+- 关机临时清理：可启用 Windows 关机事件任务，限时尝试清理后端账户的 `%TEMP%`，支持预览、手动清理及执行记录。默认未启用，详见[临时清理说明](docs/temp-cleanup.md)。
 - Android 集群设备监控：读取 `devices.txt`，通过 ADB 抓取设备屏幕并使用 WebSocket 实时推送到监控大屏。
 - 端口占用检查：检查本机 TCP/UDP 端口，并显示占用它的进程名称、PID 和监听状态。
 - 协同文本编辑器：通过 WebSocket 在多个浏览器之间同步文本，保留历史版本，并提供临时文件上传、下载、删除和粘贴图片上传。
@@ -160,19 +161,30 @@ PersonalWorkbench/
         └── styles/                   # 公共样式与 Ant Design 主题
 ```
 
-## 首页工具配置
+## 菜单与分类管理
 
-首页工具由 `PersonalWorkbenchAPI/Data/tools.json` 配置，前端通过 `GET /api/tools` 读取名称、排序、路由和图标。可以直接调整已有工具的展示；新增工具页面时，还需在 `PersonalWorkbenchWeb/src/router/index.js` 注册对应 Vue 组件：
+菜单及分类保存在 SQLite 的 `tool_menus` 和 `menu_categories` 表中。打开顶部 **数据管理 → 菜单管理**（`/settings/menus`）新增、编辑、禁用或删除菜单，维护分类及顺序。名称、路由、功能页面、图标、颜色、说明、关键词、功能标签和显示状态均由数据库加载；首页、侧栏、搜索和页面标题共享目录，保存后立即刷新。
+
+启动时自动执行内置 `Scripts/MenuSchema.sql` 补建菜单表，兼容已有卡牌数据库。仅当菜单表没有任何记录时，在同一事务中执行 `Scripts/InitializeMenus.sql`，载入程序集内置的 `Data/tools.json` 和 `Data/menu-categories.json` 初始数据；已有配置不会被覆盖，全部禁用也不会触发初始化。删除所有菜单后，下次启动会恢复默认菜单。初始化资源随程序集发布，不需要另外复制 JSON/SQL 文件。
+
+前端通过 `GET /api/tools/catalog` 读取启用的菜单及分类，通过数据库中的 `componentKey` 匹配构建时包含的 `views/tools/*View.vue`，动态注册路径。新增业务功能仍需实现对应 Vue 页面并重新构建；在管理页面可以把已有功能绑定到不同菜单路径。菜单管理是固定入口，全部禁用时仍可访问。禁用菜单会隐藏入口，并在下次加载目录时取消对应的动态路由。
+
+菜单维护请求示例：
 
 ```json
-[
-  {
+{
     "name": "SQL 驼峰转换器",
     "route": "/tools/sql-converter",
+    "componentKey": "SqlConverterView",
+    "category": "develop",
     "order": 20,
-    "icon": "SQL"
-  }
-]
+    "icon": "code",
+    "tone": "indigo",
+    "description": "转换 SQL 命名。",
+    "keywords": "sql 驼峰 下划线",
+    "features": ["SQL 命名转换"],
+    "isEnabled": true
+}
 ```
 
 字段说明：
@@ -182,9 +194,16 @@ PersonalWorkbench/
 | `name` | 首页显示的工具名称 |
 | `route` | 站内 Vue Router 路由 |
 | `order` | 首页排序号，数值越小越靠前 |
-| `icon` | 可选图标文本；未配置时使用工具名称的第一个字符 |
+| `icon` | 前端内置图标标识，例如 `code`、`folder`、`clock` |
+| `componentKey` | 已构建的功能页面名称，例如 `SqlConverterView` |
+| `category` | 已存在的分类标识 |
+| `tone` | `blue`、`teal`、`amber`、`rose` 或 `indigo` |
+| `description` / `keywords` / `features` | 说明、搜索关键词和功能标签 |
+| `isEnabled` | 是否启用菜单 |
 
-`ToolCatalogService` 会过滤空名称、空路由和外部链接，只允许以 `/` 开头的站内路由。
+接口：`GET /api/tools` 保留启用菜单列表；`GET /api/tools/manage` 返回全部菜单及分类；`POST /api/tools`、`PUT/DELETE /api/tools/{id}` 维护菜单；`POST /api/tools/categories`、`PUT/DELETE /api/tools/categories/{id}` 维护分类。路由必须符合 `/tools/my-tool` 格式且唯一；分类标识创建后不可修改，含有菜单（包括禁用项）的分类不可删除。当前沿用工作台的访问控制方式，菜单启停不作为权限隔离。
+
+回归验证：在根目录执行 `dotnet build tests/MenuCatalogChecks/MenuCatalogChecks.csproj -o artifacts/menu-db-checks`，再执行 `dotnet artifacts/menu-db-checks/MenuCatalogChecks.dll`；前端目录执行 `npm test` 和 `npm run build`。
 
 ## API 接口
 
@@ -198,7 +217,7 @@ POST /api/database/import
 Content-Type: multipart/form-data
 ```
 
-导出接口返回完整的 SQLite 数据库备份文件。导入接口的表单字段名为 `file`，导入前会执行 SQLite 完整性检查，并校验当前应用所需的数据表；成功后整体覆盖当前数据库，保留备份中的全部表、索引和数据。页面中的导入操作会先要求确认，建议覆盖前先导出当前数据库。
+导出接口返回完整的 SQLite 数据库备份文件，包含菜单、分类和卡牌数据。导入接口的表单字段名为 `file`，导入前会执行 SQLite 完整性检查，并校验当前应用所需的数据表；旧版没有菜单表的备份会先在临时库中补表并初始化菜单，校验通过后整体覆盖当前数据库，保留备份中的全部表、索引和数据。页面中的导入操作会先要求确认，建议覆盖前先导出当前数据库。
 
 ### 加密工具箱
 
@@ -352,7 +371,23 @@ Content-Type: application/json
 }
 ```
 
-`frequency` 支持 `minutely`、`hourly`、`daily`、`weekly` 和 `monthly`。接口返回 Cron 表达式和中文规则说明。生成结果使用五字段格式：`分钟 小时 日期 月份 星期`，星期日使用 `0`。
+`frequency` 支持 `minutely`、`hourly`、`daily`、`weekly` 和 `monthly`。接口返回 Cron 表达式和中文规则说明。`format` 默认为 `standard`，生成五字段格式：`分钟 小时 日期 月份 星期`；设为 `quartz` 时生成六字段格式：`秒 分钟 小时 日期 月份 星期`，可通过 `second` 指定 0–59 秒。
+
+`daily`、`weekly` 和 `monthly` 可通过 `hours` 数组选择多个小时，共用相同的分钟和秒；不传 `hours` 时继续使用原有的 `hour`。例如每天 01:09:00 和 12:09:00 只需请求一次：
+
+```json
+{
+  "format": "quartz",
+  "frequency": "daily",
+  "hours": [1, 12],
+  "minute": 9,
+  "second": 0
+}
+```
+
+结果为 `0 9 1,12 * * ?`；改用 `standard` 则为 `9 1,12 * * *`。五字段仅支持第 0 秒执行。请求的 `dayOfWeek` 始终使用 0=星期日、1=星期一至 6=星期六，服务在生成 Quartz 时自动转换成 1=星期日至 7=星期六，日期与星期有且仅有一项使用 `?`。解析预览也使用相同的格式约定；原有五字段的日期与星期仍按「或」匹配。
+
+Cron 回归检查：在前端目录执行 `node --test tests/cron.test.js tests/time.test.js`，在仓库根目录执行 `dotnet run --project tests/CronGeneratorChecks/CronGeneratorChecks.csproj`。
 
 ### Android 集群设备监控
 
@@ -462,7 +497,7 @@ GET /api/system/processes
 ```csharp
 builder.Services.AddSingleton<IdentityGeneratorService>();
 builder.Services.AddSingleton<SqlCaseConverterService>();
-builder.Services.AddSingleton<ToolCatalogService>();
+builder.Services.AddScoped<ToolCatalogService>();
 builder.Services.AddSingleton<PdfExpenseMergeService>();
 ```
 
@@ -492,7 +527,7 @@ Controller 通过构造函数接收服务实例，业务逻辑放在 `Services` 
 
 ## 注意事项
 
-- `PersonalWorkbenchAPI/Data/tools.json` 会复制到构建输出和发布目录。
+- `PersonalWorkbenchAPI/Data/tools.json` 与 `menu-categories.json` 仅作空菜单初始化数据，已嵌入程序集；日常维护通过菜单管理页面或数据库接口完成。
 - Android 的 `devices.txt` 位于 `PersonalWorkbenchAPI`，发布时会一起复制。
 - 开发时的协同文本和上传文件已随目录整体迁移到 `PersonalWorkbenchAPI/Data/collaborative-editor`；发布时不会自动复制这些运行数据。部署迁移如需保留历史内容，应备份并单独迁移至新发布目录的 `Data/collaborative-editor`。
 - `PersonalWorkbenchWeb/dist`、`node_modules`、`artifacts` 均为生成目录，不提交 Git。

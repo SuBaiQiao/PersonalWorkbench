@@ -12,11 +12,12 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<WorkbenchDbContext>(options => options.UseSqlite(connectionString));
 builder.Services.AddSingleton<IdentityGeneratorService>();
 builder.Services.AddSingleton<FileManagerService>();
+builder.Services.AddSingleton<TempCleanupService>();
 builder.Services.AddSingleton<MediaPlaybackService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<MediaPlaybackService>());
 builder.Services.AddSingleton<SqlCaseConverterService>();
 builder.Services.AddSingleton<AmountUppercaseService>();
-builder.Services.AddSingleton<ToolCatalogService>();
+builder.Services.AddScoped<ToolCatalogService>();
 builder.Services.AddSingleton<PdfExpenseMergeService>();
 builder.Services.AddSingleton<ImageBase64Service>();
 builder.Services.AddSingleton<CronGeneratorService>();
@@ -43,7 +44,9 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var database = scope.ServiceProvider.GetRequiredService<WorkbenchDbContext>();
-    database.Database.EnsureCreated();
+    await database.Database.EnsureCreatedAsync();
+    await MenuDatabaseInitializer.InitializeAsync(database);
+    await TempCleanupMenuInitializer.InitializeAsync(database);
 }
 
 if (!app.Environment.IsDevelopment())

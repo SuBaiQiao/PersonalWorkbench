@@ -2,94 +2,423 @@
   {
     "name": "身份信息生成器",
     "route": "/tools/identity-generator",
-    "order": 10
+    "order": 10,
+    "category": "develop",
+    "icon": "identity",
+    "tone": "blue",
+    "description": "为开发测试，准备一份虚构身份信息。",
+    "keywords": "身份证 测试 数据 identity",
+    "componentKey": "IdentityGeneratorView",
+    "features": [
+      "测试身份证",
+      "省市县区划",
+      "测试身份数据"
+    ],
+    "isEnabled": true
   },
   {
     "name": "SQL 驼峰转换器",
     "route": "/tools/sql-converter",
     "order": 20,
-    "icon": "SQL"
+    "icon": "code",
+    "category": "develop",
+    "tone": "indigo",
+    "description": "将驼峰命名，轻松转换为大写下划线。",
+    "keywords": "sql camel snake",
+    "componentKey": "SqlConverterView",
+    "features": [
+      "SQL 命名转换",
+      "驼峰转下划线"
+    ],
+    "isEnabled": true
   },
   {
     "name": "人民币大写转换器",
     "route": "/tools/amount-uppercase",
     "order": 25,
-    "icon": "￥"
+    "icon": "currency",
+    "category": "develop",
+    "tone": "amber",
+    "description": "把数字金额，准确转换为人民币大写。",
+    "keywords": "金额 人民币 money",
+    "componentKey": "AmountUppercaseView",
+    "features": [
+      "人民币大写",
+      "金额转换"
+    ],
+    "isEnabled": true
   },
   {
     "name": "报销发票 PDF 合并",
     "route": "/tools/expense-invoice",
     "order": 30,
-    "icon": "PDF"
+    "icon": "files",
+    "category": "files",
+    "tone": "rose",
+    "description": "整理零散发票，合并为一份清晰的 PDF。",
+    "keywords": "pdf 发票 报销 合并",
+    "componentKey": "ExpenseInvoiceView",
+    "features": [
+      "PDF 合并",
+      "发票整理"
+    ],
+    "isEnabled": true
   },
   {
     "name": "图片与 Base64 转换器",
     "route": "/tools/image-base64",
     "order": 40,
-    "icon": "IMG"
+    "icon": "image",
+    "category": "files",
+    "tone": "teal",
+    "description": "图片与 Base64，双向转换，一步完成。",
+    "keywords": "base64 图片 image",
+    "componentKey": "ImageBase64View",
+    "features": [
+      "图片转 Base64",
+      "Base64 转图片"
+    ],
+    "isEnabled": true
   },
   {
     "name": "Cron 工具箱",
     "route": "/tools/cron-generator",
     "order": 50,
-    "icon": "CRON"
+    "icon": "clock",
+    "category": "develop",
+    "tone": "blue",
+    "description": "生成、解析定时规则，预览未来执行时间。",
+    "keywords": "cron 定时 计划 校验 解析 执行",
+    "componentKey": "CronGeneratorView",
+    "features": [
+      "Cron 表达式",
+      "执行时间预览"
+    ],
+    "isEnabled": true
   },
   {
     "name": "时间戳工具",
     "route": "/tools/timestamp",
     "order": 55,
-    "icon": "TIME"
+    "icon": "clock",
+    "category": "develop",
+    "tone": "teal",
+    "description": "秒与毫秒、日期与时区，自如转换。",
+    "keywords": "timestamp unix 时间戳 日期 时区 毫秒",
+    "componentKey": "TimestampView",
+    "features": [
+      "Unix 时间戳",
+      "日期转换",
+      "时区转换"
+    ],
+    "isEnabled": true
   },
   {
     "name": "Android 集群设备监控",
     "route": "/tools/android-monitor",
     "order": 60,
-    "icon": "ADB"
+    "icon": "phone",
+    "category": "system",
+    "tone": "teal",
+    "description": "多个 Android 设备，尽在同一视野。",
+    "keywords": "android adb 手机 集群",
+    "componentKey": "AndroidMonitorView",
+    "features": [
+      "ADB",
+      "Android 设备监控"
+    ],
+    "isEnabled": true
   },
   {
     "name": "端口占用检查",
     "route": "/tools/port-checker",
     "order": 70,
-    "icon": "PORT"
+    "icon": "network",
+    "category": "system",
+    "tone": "indigo",
+    "description": "快速定位端口占用与关联进程。",
+    "keywords": "tcp udp port 端口 进程",
+    "componentKey": "PortCheckerView",
+    "features": [
+      "端口占用",
+      "TCP / UDP",
+      "关联进程"
+    ],
+    "isEnabled": true
   },
   {
     "name": "协同文本编辑器",
     "route": "/tools/collaborative-editor",
     "order": 80,
-    "icon": "SYNC"
+    "icon": "edit",
+    "category": "workspace",
+    "tone": "blue",
+    "description": "同步文字、分享文件，让协作更流畅。",
+    "keywords": "协同 协作 文本 编辑 同步",
+    "componentKey": "CollaborativeEditorView",
+    "features": [
+      "协同编辑",
+      "实时同步",
+      "文件分享"
+    ],
+    "isEnabled": true
   },
   {
     "name": "设备状态监控",
     "route": "/tools/system-monitor",
     "order": 90,
-    "icon": "SYS"
+    "icon": "activity",
+    "category": "system",
+    "tone": "teal",
+    "description": "CPU、内存与显卡，状态一目了然。",
+    "keywords": "cpu gpu 内存 显卡 系统 监控",
+    "componentKey": "SystemMonitorView",
+    "features": [
+      "CPU",
+      "GPU",
+      "内存",
+      "磁盘",
+      "进程监控"
+    ],
+    "isEnabled": true
   },
   {
     "name": "三角洲卡牌收集",
     "route": "/tools/delta-cards",
     "order": 100,
-    "icon": "CARD"
+    "icon": "cards",
+    "category": "workspace",
+    "tone": "amber",
+    "description": "记录每一份收藏，见证收集的进度。",
+    "keywords": "delta 卡牌 三角洲 收藏",
+    "componentKey": "DeltaCardsView",
+    "features": [
+      "卡牌收藏",
+      "收集进度"
+    ],
+    "isEnabled": true
   },
   {
     "name": "加密工具箱",
     "route": "/tools/crypto",
     "order": 110,
-    "icon": "KEY"
+    "icon": "lock",
+    "category": "develop",
+    "tone": "indigo",
+    "description": "加密、摘要与编解码，常用能力都在这里。",
+    "keywords": "md5 aes rsa sm2 sm4 base64 url encode 加密 解密 编码",
+    "componentKey": "CryptoView",
+    "features": [
+      "MD5",
+      "Base64",
+      "AES",
+      "RSA",
+      "SM2",
+      "SM4",
+      "URL 编解码"
+    ],
+    "isEnabled": true
   },
   {
     "name": "二维码与条形码生成器",
     "route": "/tools/code-generator",
     "order": 120,
-    "icon": "QR"
+    "icon": "qr",
+    "category": "files",
+    "tone": "blue",
+    "description": "把文字与网址，变成一扫即达的图案。",
+    "keywords": "qr code128 ean 条形码 二维码",
+    "componentKey": "CodeGeneratorView",
+    "features": [
+      "二维码",
+      "Code128",
+      "EAN 条形码"
+    ],
+    "isEnabled": true
   },
-  { "name": "JSON 工具箱", "route": "/tools/json-toolbox", "order": 130, "icon": "JSON" },
-  { "name": "文本差异对比", "route": "/tools/text-diff", "order": 140, "icon": "DIFF" },
-  { "name": "正则表达式测试", "route": "/tools/regex-tester", "order": 150, "icon": "REGEX" },
-  { "name": "UUID / 随机生成器", "route": "/tools/random-generator", "order": 160, "icon": "UUID" },
-  { "name": "JWT 解析", "route": "/tools/jwt-decoder", "order": 170, "icon": "JWT" },
-  { "name": "数据转代码", "route": "/tools/data-to-code", "order": 180, "icon": "CODE" },
-  { "name": "HTTP 请求工具", "route": "/tools/http-client", "order": 190, "icon": "HTTP" },
-  { "name": "图片工具箱", "route": "/tools/image-toolbox", "order": 200, "icon": "IMG" },
-  { "name": "视频播放器", "route": "/tools/video-player", "order": 210, "icon": "VIDEO" },
-  { "name": "磁盘文件管理", "route": "/tools/file-manager", "order": 220, "icon": "FILES" }
+  {
+    "name": "JSON 工具箱",
+    "route": "/tools/json-toolbox",
+    "order": 130,
+    "icon": "braces",
+    "category": "develop",
+    "tone": "amber",
+    "description": "格式化与查询，让复杂 JSON 清晰可读。",
+    "keywords": "json jsonpath 格式化 压缩 树 校验",
+    "componentKey": "JsonToolboxView",
+    "features": [
+      "JSON 格式化",
+      "JSONPath",
+      "树形查看",
+      "JSON 校验"
+    ],
+    "isEnabled": true
+  },
+  {
+    "name": "文本差异对比",
+    "route": "/tools/text-diff",
+    "order": 140,
+    "icon": "diff",
+    "category": "develop",
+    "tone": "rose",
+    "description": "并排查看文本，快速找到增加与删除。",
+    "keywords": "diff 文本 对比 差异 比较",
+    "componentKey": "TextDiffView",
+    "features": [
+      "文本对比",
+      "差异比较"
+    ],
+    "isEnabled": true
+  },
+  {
+    "name": "正则表达式测试",
+    "route": "/tools/regex-tester",
+    "order": 150,
+    "icon": "regex",
+    "category": "develop",
+    "tone": "indigo",
+    "description": "实时匹配、分组与替换，验证每一条规则。",
+    "keywords": "regex regexp 正则 表达式 匹配 替换",
+    "componentKey": "RegexTesterView",
+    "features": [
+      "正则匹配",
+      "分组捕获",
+      "正则替换"
+    ],
+    "isEnabled": true
+  },
+  {
+    "name": "UUID / 随机生成器",
+    "route": "/tools/random-generator",
+    "order": 160,
+    "icon": "shuffle",
+    "category": "develop",
+    "tone": "teal",
+    "description": "UUID、随机字符与密码，按需批量生成。",
+    "keywords": "uuid guid random 随机 密码 字符 数字",
+    "componentKey": "RandomGeneratorView",
+    "features": [
+      "UUID / GUID",
+      "随机密码",
+      "随机字符"
+    ],
+    "isEnabled": true
+  },
+  {
+    "name": "JWT 解析",
+    "route": "/tools/jwt-decoder",
+    "order": 170,
+    "icon": "lock",
+    "category": "develop",
+    "tone": "amber",
+    "description": "解读令牌声明，直观查看签发与过期时间。",
+    "keywords": "jwt token 令牌 解析 header payload",
+    "componentKey": "JwtDecoderView",
+    "features": [
+      "JWT 解码",
+      "Header / Payload",
+      "过期时间"
+    ],
+    "isEnabled": true
+  },
+  {
+    "name": "数据转代码",
+    "route": "/tools/data-to-code",
+    "order": 180,
+    "icon": "code",
+    "category": "develop",
+    "tone": "blue",
+    "description": "从 JSON 样本，生成 C# 与 TypeScript 类型。",
+    "keywords": "json c# csharp typescript 实体 类型 代码",
+    "componentKey": "DataToCodeView",
+    "features": [
+      "JSON 转 C#",
+      "JSON 转 TypeScript"
+    ],
+    "isEnabled": true
+  },
+  {
+    "name": "HTTP 请求工具",
+    "route": "/tools/http-client",
+    "order": 190,
+    "icon": "network",
+    "category": "develop",
+    "tone": "teal",
+    "description": "编辑请求、检查响应，轻量调试 HTTP 接口。",
+    "keywords": "http api curl get post 请求 接口 调试",
+    "componentKey": "HttpClientView",
+    "features": [
+      "HTTP 请求",
+      "cURL 导入",
+      "接口调试"
+    ],
+    "isEnabled": true
+  },
+  {
+    "name": "图片工具箱",
+    "route": "/tools/image-toolbox",
+    "order": 200,
+    "icon": "crop",
+    "category": "files",
+    "tone": "rose",
+    "description": "裁剪、缩放与压缩，处理图片的日常所需。",
+    "keywords": "图片 压缩 裁剪 缩放 转换 颜色 png jpg webp",
+    "componentKey": "ImageToolboxView",
+    "features": [
+      "图片裁剪",
+      "图片缩放",
+      "图片压缩",
+      "格式转换"
+    ],
+    "isEnabled": true
+  },
+  {
+    "name": "视频播放器",
+    "route": "/tools/video-player",
+    "order": 210,
+    "icon": "video",
+    "category": "files",
+    "tone": "teal",
+    "description": "本地影像、HLS 与直播流，在一个播放器里打开。",
+    "keywords": "视频 播放器 video mp4 webm mkv avi m3u8 hls flv rtsp rtmp ts",
+    "componentKey": "VideoPlayerView",
+    "features": [
+      "本地视频",
+      "M3U8 / HLS",
+      "FLV",
+      "RTSP / RTMP"
+    ],
+    "isEnabled": true
+  },
+  {
+    "name": "磁盘文件管理",
+    "route": "/tools/file-manager",
+    "order": 220,
+    "icon": "folder",
+    "category": "files",
+    "tone": "blue",
+    "description": "浏览磁盘目录，预览文件并在线编辑文本。",
+    "keywords": "磁盘 文件 文件夹 目录 管理 预览 在线 编辑 file explorer disk folder",
+    "componentKey": "FileManagerView",
+    "features": [
+      "目录浏览",
+      "文件预览",
+      "在线编辑",
+      "UTF-8 / GBK"
+    ],
+    "isEnabled": true
+  },
+  {
+    "name": "关机临时清理",
+    "route": "/tools/temp-cleanup",
+    "order": 230,
+    "icon": "folder",
+    "category": "system",
+    "tone": "teal",
+    "description": "关机时自动尝试清理 TEMP，释放临时文件占用。",
+    "keywords": "temp tmp 临时 文件 清理 关机 重启 shutdown 自动 cleanup 缓存",
+    "componentKey": "TempCleanupView",
+    "features": ["TEMP 临时文件", "关机自动清理", "清理预览", "清理记录"],
+    "isEnabled": true
+  }
 ]

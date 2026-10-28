@@ -20,7 +20,7 @@ public sealed class CronController : ControllerBase
     }
 
     /// <summary>
-    /// 根据执行频率和时间参数生成标准五字段 Cron 表达式。
+    /// 根据执行频率和时间参数生成五字段 Cron 或六字段 Quartz 表达式。
     /// </summary>
     /// <param name="request">频率、间隔、时间和日期参数。</param>
     /// <returns>生成结果，或包含参数错误信息的 400 响应。</returns>

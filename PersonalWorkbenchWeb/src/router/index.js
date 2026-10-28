@@ -1,39 +1,38 @@
+import { watch } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
+import { tools, loadTools } from '../composables/useToolCatalog.js';
+import { createMenuRoutes } from '../utils/menuRoutes.js';
+
+// 组件实现仍随构建发布，名称、地址和展示配置由数据库维护。
+const modules = import.meta.glob('../views/tools/*View.vue');
+export const toolComponents = Object.fromEntries(Object.entries(modules).map(([path, loader]) => [path.split('/').pop().replace('.vue', ''), loader]));
 
 export const router = createRouter({
     history: createWebHistory(),
-    // 页面由工作区容器独立滚动，切换路由时由 WorkbenchLayout 重置位置。
     scrollBehavior: () => false,
     routes: [
-        { path: '/', component: () => import('../views/HomeView.vue'), meta: { title: '工具台' } },
-        { path: '/tools/file-manager', component: () => import('../views/tools/FileManagerView.vue'), meta: { title: '磁盘文件管理' } },
-        { path: '/tools/video-player', component: () => import('../views/tools/VideoPlayerView.vue'), meta: { title: '视频播放器' } },
-        { path: '/tools/identity-generator', component: () => import('../views/tools/IdentityGeneratorView.vue'), meta: { title: '身份信息生成器' } },
-        { path: '/tools/sql-converter', component: () => import('../views/tools/SqlConverterView.vue'), meta: { title: 'SQL 驼峰转换器' } },
-        { path: '/tools/amount-uppercase', component: () => import('../views/tools/AmountUppercaseView.vue'), meta: { title: '人民币大写转换器' } },
-        { path: '/tools/expense-invoice', component: () => import('../views/tools/ExpenseInvoiceView.vue'), meta: { title: '报销发票 PDF 合并' } },
-        { path: '/tools/image-base64', component: () => import('../views/tools/ImageBase64View.vue'), meta: { title: '图片与 Base64 转换器' } },
-        { path: '/tools/cron-generator', component: () => import('../views/tools/CronGeneratorView.vue'), meta: { title: 'Cron 工具箱' } },
-        { path: '/tools/timestamp', component: () => import('../views/tools/TimestampView.vue'), meta: { title: '时间戳工具' } },
-        { path: '/tools/json-toolbox', component: () => import('../views/tools/JsonToolboxView.vue'), meta: { title: 'JSON 工具箱' } },
-        { path: '/tools/text-diff', component: () => import('../views/tools/TextDiffView.vue'), meta: { title: '文本差异对比' } },
-        { path: '/tools/regex-tester', component: () => import('../views/tools/RegexTesterView.vue'), meta: { title: '正则表达式测试' } },
-        { path: '/tools/random-generator', component: () => import('../views/tools/RandomGeneratorView.vue'), meta: { title: 'UUID / 随机生成器' } },
-        { path: '/tools/jwt-decoder', component: () => import('../views/tools/JwtDecoderView.vue'), meta: { title: 'JWT 解析' } },
-        { path: '/tools/data-to-code', component: () => import('../views/tools/DataToCodeView.vue'), meta: { title: '数据转代码' } },
-        { path: '/tools/http-client', component: () => import('../views/tools/HttpClientView.vue'), meta: { title: 'HTTP 请求工具' } },
-        { path: '/tools/image-toolbox', component: () => import('../views/tools/ImageToolboxView.vue'), meta: { title: '图片工具箱' } },
-        { path: '/tools/android-monitor', component: () => import('../views/tools/AndroidMonitorView.vue'), meta: { title: 'Android 集群设备监控' } },
-        { path: '/tools/port-checker', component: () => import('../views/tools/PortCheckerView.vue'), meta: { title: '端口占用检查' } },
-        { path: '/tools/collaborative-editor', component: () => import('../views/tools/CollaborativeEditorView.vue'), meta: { title: '协同文本编辑器' } },
-        { path: '/tools/system-monitor', component: () => import('../views/tools/SystemMonitorView.vue'), meta: { title: '设备状态监控' } },
-        { path: '/tools/delta-cards', component: () => import('../views/tools/DeltaCardsView.vue'), meta: { title: '三角洲卡牌收集' } },
-        { path: '/tools/crypto', component: () => import('../views/tools/CryptoView.vue'), meta: { title: '加密工具箱' } },
-        { path: '/tools/code-generator', component: () => import('../views/tools/CodeGeneratorView.vue'), meta: { title: '二维码与条形码生成器' } },
-        { path: '/:pathMatch(.*)*', component: () => import('../views/NotFoundView.vue'), meta: { title: '页面不存在' } }
+        { path: '/', name: 'home', component: () => import('../views/HomeView.vue'), meta: { title: '工具台' } },
+        // 固定维护入口使空菜单、全部禁用时仍然可以管理菜单。
+        { path: '/settings/menus', name: 'menu-settings', component: () => import('../views/MenuSettingsView.vue'), meta: { title: '菜单管理', icon: 'menu' } },
+        { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('../views/NotFoundView.vue'), meta: { title: '页面不存在' } }
     ]
 });
 
-router.afterEach(to => {
-    document.title = to.meta.title + ' · Personal Workbench';
+let removeRoutes = [];
+watch(tools, () => {
+    removeRoutes.forEach(remove => remove());
+    removeRoutes = createMenuRoutes(tools.value, toolComponents).map(route => router.addRoute(route));
+    const current = router.currentRoute.value;
+    if (current.name === 'not-found' && router.resolve(current.fullPath).name !== 'not-found')
+        router.replace(current.fullPath);
 });
+
+router.beforeEach(async to => {
+    // 首页和维护入口可以先呈现加载/重试界面，不等待后端目录。
+    if (!to.path.startsWith('/tools/')) return;
+    await loadTools();
+    // 首次直接访问工具地址时，目录返回后重新匹配刚注册的路由。
+    const resolved = router.resolve(to.fullPath);
+    if (resolved.name !== to.name) return to.fullPath;
+});
+router.afterEach(to => { document.title = to.meta.title + ' · Personal Workbench'; });

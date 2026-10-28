@@ -74,13 +74,21 @@ public sealed record ImageBase64Response(
 
 public sealed class CronGenerationRequest
 {
+    /// <summary>standard 为五字段，quartz 为带秒的六字段；默认兼容原接口。</summary>
+    public string Format { get; set; } = "standard";
+
     public string Frequency { get; set; } = "daily";
 
     public int Interval { get; set; } = 1;
 
     public int Minute { get; set; }
 
+    public int Second { get; set; }
+
     public int Hour { get; set; }
+
+    /// <summary>固定时间频率下的执行小时列表；未传时使用 Hour。</summary>
+    public int[]? Hours { get; set; }
 
     public int DayOfWeek { get; set; } = 1;
 
@@ -93,6 +101,22 @@ public sealed record PdfMergeInput(string FileName, Stream Content);
 
 public sealed class ToolDefinition
 {
+    public int Id { get; set; }
+
+    public string ComponentKey { get; set; } = string.Empty;
+
+    public string Category { get; set; } = string.Empty;
+
+    public string Tone { get; set; } = "blue";
+
+    public string Description { get; set; } = string.Empty;
+
+    public string Keywords { get; set; } = string.Empty;
+
+    public string[] Features { get; set; } = [];
+
+    public bool IsEnabled { get; set; } = true;
+
     public string Name { get; set; } = string.Empty;
 
     public string Route { get; set; } = string.Empty;

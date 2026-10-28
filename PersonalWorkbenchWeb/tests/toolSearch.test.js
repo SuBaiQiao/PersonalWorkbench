@@ -5,8 +5,9 @@ import { getToolPresentation } from '../src/utils/toolPresentation.js';
 import { searchTools } from '../src/utils/toolSearch.js';
 
 // 使用真实目录验证功能索引，防止首页、侧栏或新增目录项与搜索规则脱节。
+const categories = JSON.parse(readFileSync(new URL('../../PersonalWorkbenchAPI/Data/menu-categories.json', import.meta.url), 'utf8'));
 const tools = JSON.parse(readFileSync(new URL('../../PersonalWorkbenchAPI/Data/tools.json', import.meta.url), 'utf8'))
-    .map(tool => ({ ...tool, ...getToolPresentation(tool.route) }));
+    .map(tool => ({ ...getToolPresentation(tool), categoryName: categories.find(category => category.id === tool.category)?.name }));
 const routes = query => searchTools(tools, query).map(tool => tool.route);
 
 test('加密关联到 MD5、Base64 等具体能力，并优先展示直接命中的工具', () => {

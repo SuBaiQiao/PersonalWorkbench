@@ -3,7 +3,6 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import WorkbenchIcon from './WorkbenchIcon.vue';
 import { useToolCatalog } from '../composables/useToolCatalog.js';
-import { toolCategories } from '../utils/toolPresentation.js';
 import { useToolSearch } from '../composables/useToolSearch.js';
 import { searchTools } from '../utils/toolSearch.js';
 
@@ -15,7 +14,7 @@ const props = defineProps({ collapsed: Boolean, mobile: Boolean });
 // 内容组件只通知导航或收起意图，抽屉关闭和偏好保存交给父布局处理。
 const emit = defineEmits(['navigate', 'toggle-collapse']);
 const route = useRoute();
-const { tools, presentedTools, loading, errorMessage, loadTools } = useToolCatalog();
+const { tools, presentedTools, toolCategories, loading, errorMessage, loadTools } = useToolCatalog();
 const { query: search, clearSearch } = useToolSearch();
 const navigation = ref(null);
 /**
@@ -24,7 +23,7 @@ const navigation = ref(null);
  */
 const groups = computed(() => {
     const matching = searchTools(presentedTools.value, search.value);
-    return toolCategories.filter(category => category.id !== 'all')
+    return toolCategories.value.filter(category => category.id !== 'all')
         .map(category => ({ ...category, tools: matching.filter(tool => tool.category === category.id) }))
         .filter(group => group.tools.length);
 });

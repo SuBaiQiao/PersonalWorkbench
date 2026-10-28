@@ -107,6 +107,8 @@ public sealed class DatabaseTransferService(WorkbenchDbContext db)
         var requiredTables = db.Model.GetEntityTypes()
             .Select(entity => entity.GetTableName())
             .Where(name => !string.IsNullOrWhiteSpace(name))
+            // 旧版备份尚无菜单表，在临时库内升级后再整体导入。
+            .Where(name => name is not "tool_menus" and not "menu_categories")
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         if (requiredTables.Any(table => !tables.Contains(table!)))
@@ -114,6 +116,29 @@ public sealed class DatabaseTransferService(WorkbenchDbContext db)
             throw new InvalidDataException("数据库文件缺少当前应用需要的数据表。");
         }
 
+        await reader.DisposeAsync();
+        await connection.CloseAsync();
+        var options = new DbContextOptionsBuilder<WorkbenchDbContext>().UseSqlite(new SqliteConnectionStringBuilder
+        {
+            DataSource = path,
+            Pooling = false
+        }.ToString()).Options;
+        await using var staged = new WorkbenchDbContext(options);
+        try
+        {
+            await MenuDatabaseInitializer.InitializeAsync(staged, cancellationToken);
+            await staged.ToolMenus.AsNoTracking().ToListAsync(cancellationToken);
+            await staged.MenuCategories.AsNoTracking().ToListAsync(cancellationToken);
+            await staged.DeltaCards.AsNoTracking().Take(1).ToListAsync(cancellationToken);
+            if (await staged.ToolMenus.AnyAsync(tool => !staged.MenuCategories.Any(category => category.Id == tool.Category), cancellationToken))
+                throw new InvalidDataException("备份中的菜单引用了不存在的分类。");
+        }
+        catch (Exception exception) when (exception is SqliteException or InvalidOperationException or System.Text.Json.JsonException)
+        {
+            throw new InvalidDataException("数据库菜单结构或数据无效。", exception);
+        }
+        tables.Add("tool_menus");
+        tables.Add("menu_categories");
         return tables.Count;
     }
 
